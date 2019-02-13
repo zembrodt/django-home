@@ -4,7 +4,18 @@ def home(request):
 
     # Specify what modules to include in the dashboard
     # TODO: add to user settings
-    modules = ['dt', 'weather']
+    modules = [
+        {
+            'id': 'dt',
+            'top': 0,
+            'left': 0
+        },
+        {
+            'id': 'weather',
+            'top': 50,
+            'left': 100
+        }
+    ]
 
     context = {
         'modules': modules
@@ -13,7 +24,18 @@ def home(request):
 
 def update(request):
     # TODO: add to user settings
-    modules = ['dt', 'weather']
+    modules = [
+        {
+            'id': 'dt',
+            'top': 0,
+            'left': 0
+        },
+        {
+            'id': 'weather',
+            'top': 50,
+            'left': 100
+        }
+    ]
 
     context = {
         'modules': modules
