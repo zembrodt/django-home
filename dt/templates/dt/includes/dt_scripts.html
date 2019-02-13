@@ -1,0 +1,45 @@
+<script>
+    const seconds_inc = 1000;
+    const minutes_inc = seconds_inc * 60;
+    const hours_inc = minutes_inc * 60;
+    function init_clock() {
+        // Increment seconds
+        setInterval(function() {
+            var seconds = new Date().getSeconds();
+            $('#second').html(seconds);
+        }, seconds_inc);
+        // Increment minutes
+        setInterval(function() {
+            var minutes = new Date().getMinutes();
+            $('#minute').html(minutes);
+        }, minutes_inc);
+        // Increment hours
+        setInterval(function() {
+            var hours = new Date().getHours();
+            $('#hour').html(hours);
+        }, hours_inc);
+    }
+    $(function(){
+        // Initialize the values:
+        var now = new Date();
+        var seconds = now.getSeconds();
+        $('#second').html(seconds);
+        var minutes = now.getMinutes();
+        $('#minute').html(minutes);
+        var hours = now.getHours();
+        $('#hour').html(hours);
+
+        // Wait until we hit a new minute
+        while (seconds != 0) {
+            seconds = new Date().getSeconds();
+            $('#second').html(seconds);
+        }
+        // Re init minutes and hours
+        minutes = new Date().getMinutes();
+        $('#minute').html(minutes);
+        hours = new Date().getHours();
+        $('#hour').html(hours);
+        // Call function to set intervals
+        init_clock();
+    });
+</script>

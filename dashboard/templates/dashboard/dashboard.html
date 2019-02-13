@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% for module in modules %}
+        {% with path=module|add:"/includes/"|add:module|add:"_styles.html" %}
+            {% include path %}
+        {% endwith %}
+    {% endfor %}
+
+    {% if title %}
+        <title>{{ title }}</title>
+    {% else %}
+        <title>Dashboard</title>
+    {% endif %}
+</head>
+<body>
+    <h1>Dashboard</h1>
+    {% for module in modules %}
+        <div id="{{ module }}">
+            {% with path=module|add:"/"|add:module|add:".html" %}
+                {% include path %}
+            {% endwith %}
+        </div>
+    {% endfor %}
+
+        <!-- TODO: figure out a better way to have /update use this code -->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    {% for module in modules %}
+        {% with path=module|add:"/includes/"|add:module|add:"_scripts.html" %}
+            {% include path %}
+        {% endwith %}
+    {% endfor %}
+</body>
+</html>
