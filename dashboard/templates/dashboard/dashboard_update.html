@@ -1,44 +1,19 @@
-<!DOCTYPE html>
-<html>
-<head>
+{% extends "dashboard/dashboard.html" %}
+
+{% block update-styles %}
     {% for module in modules %}
-        {% with path=module.id|add:"/includes/"|add:module.id|add:"_styles.html" %}
-            {% include path %}
-        {% endwith %}
+        {% with id=module.id|escapejs %}    
         <style>
-            #{{ module.id }} {
-                position: absolute;
-                z-index: 9;
+            #{{ id }} {
                 border: 1px solid #d3d3d3;
                 cursor: move;
-                top: {{module.top}}px;
-                left: {{module.left}}px;
             }
         </style>
-    {% endfor %}
-
-    {% if title %}
-        <title>{{ title }}</title>
-    {% else %}
-        <title>Dashboard</title>
-    {% endif %}
-</head>
-<body>
-    <h1>Dashboard</h1>
-    {% for module in modules %}
-        <div id="{{ module.id }}">
-            {% with path=module.id|add:"/"|add:module.id|add:".html" %}
-                {% include path %}
-            {% endwith %}
-        </div>
-    {% endfor %}
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
-    {% for module in modules %}
-        {% with path=module.id|add:"/includes/"|add:module.id|add:"_scripts.html" %}
-            {% include path %}
         {% endwith %}
     {% endfor %}
+{% endblock %}
+
+{% block update-scripts %}
     <script>
         //TEST
         $(window).resize(function() {
@@ -53,10 +28,12 @@
         modules = [];
 
         {% for module in modules %}
-            //modules.push("{{ module.id|escapejs }}");
-            $('.{{ module.id}}').ready(function() {
-                dragElement(document.getElementById('{{module.id}}'));
-            });
+            {% with id=module.id|escapejs %}
+                //modules.push("{{ id }}");
+                $('.{{ id }}').ready(function() {
+                    dragElement(document.getElementById('{{ id }}'));
+                });
+            {% endwith %}
         {% endfor %}
 
         //Make the DIV element draggable:
@@ -101,5 +78,4 @@
         }
         }
     </script>
-</body>
-</html>
+{% endblock %}

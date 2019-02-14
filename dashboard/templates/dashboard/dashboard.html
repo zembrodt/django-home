@@ -2,18 +2,19 @@
 <html>
 <head>
     {% for module in modules %}
-        {% with path=module.id|add:"/includes/"|add:module.id|add:"_styles.html" %}
-            {% include path %}
-        {% endwith %}
+        {% include module.styles|escapejs %}
+        {% with id=module.id|escapejs %}
         <style>
-            #{{ module }} {
+            #{{ id }} {
                 position: absolute;
                 z-index: 9;
-                top: {{ module.top }}px;
-                left: {{ module.left }}px;
+                top: {{module.top}}px;
+                left: {{module.left}}px;
             }
         </style>
+        {% endwith %}
     {% endfor %}
+    {% block update-styles %}{% endblock %}
 
     {% if title %}
         <title>{{ title }}</title>
@@ -24,20 +25,15 @@
 <body>
     <h1>Dashboard</h1>
     {% for module in modules %}
-        <div id="{{ module }}">
-            {% with path=module.id|add:"/"|add:module.id|add:".html" %}
-                {% include path %}
-            {% endwith %}
+        <div id="{{ module.id|escapejs }}">
+            {% include module.page|escapejs %}
         </div>
     {% endfor %}
 
-        <!-- TODO: figure out a better way to have /update use this code -->
-
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
     {% for module in modules %}
-        {% with path=module.id|add:"/includes/"|add:module.id|add:"_scripts.html" %}
-            {% include path %}
-        {% endwith %}
+        {% include module.scripts|escapejs %}
     {% endfor %}
+    {% block update-scripts %}{% endblock %}
 </body>
 </html>
