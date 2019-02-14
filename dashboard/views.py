@@ -7,11 +7,17 @@ def home(request):
     modules = [
         {
             'id': 'dt',
-            'top': 0,
-            'left': 0
+            'styles': 'dt/includes/dt_styles.html',
+            'scripts': 'dt/includes/dt_scripts.html',
+            'page': 'dt/dt.html',
+            'top': 200,
+            'left': 10
         },
         {
             'id': 'weather',
+            'styles': 'weather/includes/weather_styles.html',
+            'scripts': 'weather/includes/weather_scripts.html',
+            'page': 'weather/weather.html',
             'top': 50,
             'left': 100
         }
@@ -27,11 +33,17 @@ def update(request):
     modules = [
         {
             'id': 'dt',
-            'top': 0,
-            'left': 0
+            'styles': 'dt/includes/dt_styles.html',
+            'scripts': 'dt/includes/dt_scripts.html',
+            'page': 'dt/dt.html',
+            'top': 200,
+            'left': 10
         },
         {
             'id': 'weather',
+            'styles': 'weather/includes/weather_styles.html',
+            'scripts': 'weather/includes/weather_scripts.html',
+            'page': 'weather/weather.html',
             'top': 50,
             'left': 100
         }
