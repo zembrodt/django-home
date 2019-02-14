@@ -23,6 +23,7 @@
     {% endif %}
 </head>
 <body>
+    {% block update-content %}{% endblock %}
     <h1>Dashboard</h1>
     {% for module in modules %}
         <div id="{{ module.id|escapejs }}">

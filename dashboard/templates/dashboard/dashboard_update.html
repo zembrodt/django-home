@@ -13,6 +13,12 @@
     {% endfor %}
 {% endblock %}
 
+{% block update-content %}
+    <form id='update-dashboard'>
+        <button type='submit'>Save Dashboard</button>
+    </form>
+{% endblock %}
+
 {% block update-scripts %}
     <script>
         //TEST
@@ -46,36 +52,97 @@
         function dragElement(elmnt) {
             var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
             elmnt.onmousedown = dragMouseDown;
+        
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // get the mouse cursor position at startup:
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                // call a function whenever the cursor moves:
+                document.onmousemove = elementDrag;
+            }
 
-        function dragMouseDown(e) {
-            e = e || window.event;
-            e.preventDefault();
-            // get the mouse cursor position at startup:
-            pos3 = e.clientX;
-            pos4 = e.clientY;
-            document.onmouseup = closeDragElement;
-            // call a function whenever the cursor moves:
-            document.onmousemove = elementDrag;
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // calculate the new cursor position:
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                // set the element's new position:
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+            }
+
+            function closeDragElement() {
+                /* stop moving when mouse button is released:*/
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }   
+        
+        // TODO: figure out how to do this without hardcoding
+        const valid_ids = ['dt', 'weather'];
+        function processUpdate(e) {
+            if (e.preventDefault) e.preventDefault();
+
+            var ids = [];
+            var ids_to_save = [];
+            $(document.body).find('div').each(function(){ ids.push(this.id) });
+            for (i in ids) {
+                if (valid_ids.includes(ids[i])){
+                    ids_to_save.push(ids[i]);
+                }
+            }
+
+            console.log('Saving the valid ids: [' + ids_to_save +']');
+
+            savePositions(ids_to_save);
+
+            // You must return false to prevent the default form behavior
+            return false;
         }
 
-        function elementDrag(e) {
-            e = e || window.event;
-            e.preventDefault();
-            // calculate the new cursor position:
-            pos1 = pos3 - e.clientX;
-            pos2 = pos4 - e.clientY;
-            pos3 = e.clientX;
-            pos4 = e.clientY;
-            // set the element's new position:
-            elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-            elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+        var form = document.getElementById('update-dashboard');
+        if (form.attachEvent) {
+            form.attachEvent('submit', processUpdate);
+        } else {
+            form.addEventListener('submit', processUpdate);
         }
 
-        function closeDragElement() {
-            /* stop moving when mouse button is released:*/
-            document.onmouseup = null;
-            document.onmousemove = null;
-        }
+        function savePositions(ids) {
+            var id_data_temp = [];
+            
+            for (i in ids) {
+                var id_div = $('#'+ids[i]);
+                id_data_temp.push(
+                    JSON.stringify({
+                        'id': ids[i],
+                        'top': id_div.css('top'),
+                        'left': id_div.css('left')
+                    })
+                );
+            }
+            console.log('Sending the data:\n'+id_data_temp);
+
+            $.ajax(
+            {
+                type:"GET",
+                url: "/save_update/",
+                dataType: "json",
+                data:{
+                        //csrfmiddlewaretoken: '{{ csrf_token }}',
+                        'id_data[]': id_data_temp
+                },
+                success: function(data) 
+                {
+                    // TODO: modify things here? Maybe fade out save button
+                    console.log('We saved the positions!');
+                }
+            })
         }
     </script>
 {% endblock %}
