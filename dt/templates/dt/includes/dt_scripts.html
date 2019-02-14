@@ -2,44 +2,41 @@
     const seconds_inc = 1000;
     const minutes_inc = seconds_inc * 60;
     const hours_inc = minutes_inc * 60;
-    function init_clock() {
-        // Increment seconds
-        setInterval(function() {
-            var seconds = new Date().getSeconds();
-            $('#second').html(seconds);
-        }, seconds_inc);
-        // Increment minutes
-        setInterval(function() {
-            var minutes = new Date().getMinutes();
-            $('#minute').html(minutes);
-        }, minutes_inc);
-        // Increment hours
-        setInterval(function() {
-            var hours = new Date().getHours();
-            $('#hour').html(hours);
-        }, hours_inc);
-    }
-    $(function(){
-        // Initialize the values:
-        var now = new Date();
-        var seconds = now.getSeconds();
-        $('#second').html(seconds);
-        var minutes = now.getMinutes();
-        $('#minute').html(minutes);
-        var hours = now.getHours();
-        $('#hour').html(hours);
 
-        // Wait until we hit a new minute
-        while (seconds != 0) {
-            seconds = new Date().getSeconds();
-            $('#second').html(seconds);
+    // Set the clock values
+    function set_seconds() {
+        $('#second').html(new Date().getSeconds());
+    }
+    function set_minutes() {
+        $('#minute').html(new Date().getMinutes());
+    }
+    function set_hours() {
+        $('#hour').html(new Date().getHours());
+    }
+
+    // Starts the timers for each value
+    function start_clock() {
+        // Increment seconds
+        setInterval(set_seconds(), seconds_inc);
+        // Increment minutes
+        setInterval(set_minutes(), minutes_inc);
+        // Increment hours
+        setInterval(set_hours(), hours_inc);
+    }
+
+    // Initialize all the values
+    set_seconds();
+    set_minutes();
+    set_hours();
+
+    var seconds = new Date().getSeconds();
+    var ticks = 60 - seconds;
+    var secondsInterval = setInterval(function() {
+        $('#second').html(new Date().getSeconds());
+        ticks--;
+        if (ticks <= 0) {
+            window.clearInterval(secondsInterval);
+            start_clock();
         }
-        // Re init minutes and hours
-        minutes = new Date().getMinutes();
-        $('#minute').html(minutes);
-        hours = new Date().getHours();
-        $('#hour').html(hours);
-        // Call function to set intervals
-        init_clock();
-    });
+    }, seconds_inc);
 </script>
