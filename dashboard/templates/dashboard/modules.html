@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{ request.user }}'s Modules</title>
+    </head>
+    <body>
+        <h1>{{ request.user }}'s Modules</h1>
+        {% for module in modules %}
+            <p>
+                Module type: {{ module.module_type }}<br/>
+                X: {{ module.x }}<br/>
+                y: {{ module.y }}
+            </p>
+        {% endfor %}
+    </body>
+</html>

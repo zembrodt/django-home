@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-    {% for module in modules %}
-        {% include module.styles|escapejs %}
-        {% with id=module.id|escapejs %}
+    {% for module, values in modules.items %}
+        {% with id=values.id|escapejs %}
+        {% include values.styles|escapejs %}
         <style>
             #{{ id }} {
                 position: absolute;
                 z-index: 9;
-                top: {{module.top}}px;
-                left: {{module.left}}px;
+                top: {{values.top}}px;
+                left: {{values.left}}px;
             }
         </style>
         {% endwith %}
@@ -24,17 +24,19 @@
 </head>
 <body>
     {% block update-content %}{% endblock %}
-    <h1>Dashboard</h1>
-    {% for module in modules %}
-        <div id="{{ module.id|escapejs }}">
-            {% include module.page|escapejs %}
+    <h1>{{ user }}'s Dashboard</h1>
+    {% for module, values in modules.items %}
+        <div id="{{ values.id|escapejs }}">
+            {% include values.page|escapejs %}
         </div>
     {% endfor %}
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
-    {% for module in modules %}
-        {% include module.scripts|escapejs %}
+
+    {% for module, values in modules.items %}  
+        {% include values.scripts|escapejs %}
     {% endfor %}
+
     {% block update-scripts %}{% endblock %}
 </body>
 </html>
