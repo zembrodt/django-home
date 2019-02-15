@@ -1,12 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
-from dashboard.models import Module
 #from PIL import Image
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    slogan = models.CharField(max_length=50)
     #image = models.ImageField(default='default.jpg', upload_to='profile_pics')
-    modules = models.ManyToManyField(Module)
+    #modules = models.ManyToManyField(Module)
 
     def __str__(self):
         return f'{self.user.username} Profile'
