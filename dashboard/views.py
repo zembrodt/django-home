@@ -11,8 +11,16 @@ from users.models import Profile
 from dashboard.models import Module
 import json, re
 
-@login_required
+DEFAULT_Z_INDEX = 9
+
 def home(request):
+    context = {
+        'user': request.user
+    }
+    return render(request, 'dashboard/home.html', context)
+
+@login_required
+def dashboard(request):
     context = {
         'modules': generate_context(request.user),
         'user': request.user
@@ -60,6 +68,10 @@ class ModuleListView(LoginRequiredMixin, ListView):#UserPassesTestMixin, ListVie
     model = Module
     template_name = 'dashboard/modules.html' # default: <app>/<model>_<viewtype>.html
     context_object_name = 'modules'
+    
+    #def get(self, request, *args, **kwargs):
+    #    context = super(ModuleListView, self).get_context_data(**kwargs)
+    #    context.update({'title': f'{self.request.user}\'s Modules'})
 
     def get_queryset(self):
         user = get_object_or_404(User, username=self.request.user)
@@ -78,6 +90,7 @@ class ModuleListView(LoginRequiredMixin, ListView):#UserPassesTestMixin, ListVie
 class ModuleCreateView(LoginRequiredMixin, CreateView):
     model = Module
     fields = ['module_type', 'x', 'y']
+    title = 'Add Module'
 
     def form_valid(self, form):
         user = Profile.objects.filter(user=self.request.user).first()
@@ -87,6 +100,7 @@ class ModuleCreateView(LoginRequiredMixin, CreateView):
 def generate_context(user):
     user = Profile.objects.filter(user=user).first()
     modules = {}
+    z_index = DEFAULT_Z_INDEX # TODO: store this value in module settings?
     for module in Module.objects.filter(owner=user):
         t = module.module_type.module_type
         # TODO: may need to assign this dict key to pk of module to allow multiple copies
@@ -97,6 +111,8 @@ def generate_context(user):
             'scripts': f'{t}/includes/{t}_scripts.html',
             'page': f'{t}/{t}.html',
             'top': module.y,
-            'left': module.x
+            'left': module.x,
+            'z_index': z_index,
         }
+        z_index += 1
     return modules

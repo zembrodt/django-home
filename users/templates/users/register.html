@@ -1,24 +1,29 @@
-{% extends "users/base.html" %}
+{% extends "dashboard/base.html" %}
+{% load static %}
 {% load crispy_forms_tags %}
 
-{% block title %}
-    Register
+{% block styles %}
+    <link href="{% static 'users/css/form.css' %}" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
-    <form method="POST">
-        {% csrf_token %}
-        <fieldset>
-            <legend>Join Today</legend>
-            {{ form|crispy }}
-        </fieldset>
+    {% include "dashboard/includes/nav.html" with register="true" %}
+
+    <div class="text-center">
+        <form class="form-centered" method="POST">
+            {% csrf_token %}
+            <h1 class="h3 mb-3 font-weight-normal">Join Today</h1>
+            <fieldset>
+                {{ form|crispy }}
+            </fieldset>
+            <div>
+                <button class="btn btn-lg btn-primary btn-block" type="submit">Sign Up</button>
+            </div>
+        </form>
         <div>
-            <button type="submit">Sign Up</button>
+            <small class="mb-3 text-muted">
+                Already Have An Account? <a href="{% url 'user-login' %}">Sign In</a>
+            </small>
         </div>
-    </form>
-    <div>
-        <small>
-            Already Have An Account? <a href="{% url 'user-login' %}">Sign In</a>
-        </small>
     </div>
 {% endblock %}

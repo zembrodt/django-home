@@ -19,4 +19,4 @@ class Module(models.Model):
         return f'Module of {self.module_type} at ({self.x}, {self.y})'
 
     def get_absolute_url(self):
-        return reverse('dashboard-home')#, kwargs={'pk': self.pk})
+        return reverse('dashboard')#, kwargs={'pk': self.pk})

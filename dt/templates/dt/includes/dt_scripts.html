@@ -1,17 +1,25 @@
 <script>
+    // Function to pad leading zeros
+    // TODO: move to an overall site-global script?
+    Number.prototype.pad = function(size) {
+        var s = String(this);
+        while (s.length < (size || 2)) {s = "0" + s;}
+        return s;
+    }
+    
     const seconds_inc = 1000;
     const minutes_inc = seconds_inc * 60;
     const hours_inc = minutes_inc * 60;
 
     // Set the clock values
     function set_seconds() {
-        $('#second').html(new Date().getSeconds());
+        $('#second').html((new Date().getSeconds()).pad(2));
     }
     function set_minutes() {
-        $('#minute').html(new Date().getMinutes());
+        $('#minute').html((new Date().getMinutes()).pad(2));
     }
     function set_hours() {
-        $('#hour').html(new Date().getHours());
+        $('#hour').html((new Date().getHours()).pad(2));
     }
 
     // Starts the timers for each value

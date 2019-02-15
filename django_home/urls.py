@@ -19,9 +19,8 @@ from weather import views as weather_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    #path('', include('users.urls')),
-    path('', include('dashboard.urls')), #NOTE: temporary
-    path('dashboard/', include('dashboard.urls')),
+    path('', include('dashboard.urls')),
+    #path('dashboard/', include('dashboard.urls')),
     path('update_weather/', weather_views.update_weather, name='weather-update'),
     path('user/', include ('users.urls'))
 ]

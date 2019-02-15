@@ -7,9 +7,10 @@ from .views import (
 
 # NOTE: using weather's 'views'
 urlpatterns = [
-    path('', views.home, name='dashboard-home'),
-    path('update/', views.update, name='dashboard-update'),
-    path('save_update/', views.save_update, name='dashboard-update-save'),
+    path('', views.home, name='home'),
+    path('dashboard/', views.dashboard, name='dashboard'),
+    path('dashboard/update/', views.update, name='dashboard-update'),
+    path('dashboard/save_update/', views.save_update, name='dashboard-update-save'),
     path('modules/', ModuleListView.as_view(), name='user-modules'),
     path('modules/add/', ModuleCreateView.as_view(), name='add-module')
 ]

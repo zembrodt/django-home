@@ -1,0 +1,36 @@
+<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="#">Django Home</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto">
+        <li class="nav-item {% if home %}active{% endif %}">
+            <a class="nav-link" href="{% url 'home' %}">Home</a>
+        </li>
+        {% if user.is_authenticated %}
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="dropdown-dashboard" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dashboard</a>
+                <div class="dropdown-menu" aria-labelledby="dropdown-dashboard">
+                    <a class="dropdown-item" href="{% url 'dashboard' %}">View Dashboard</a>
+                    <a class="dropdown-item" href="{% url 'dashboard-update' %}">Edit Dashboard</a>
+                </div>
+            </li>
+            <li class="nav-item {% if modules %}active{% endif %}">
+                <a class="nav-link" href="{% url 'user-modules' %}">Modules</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'user-logout' %}">Logout</a>
+            </li>
+        {% else %}
+            <li class="nav-item {% if login %}active{% endif %}">
+                <a class="nav-link" href="{% url 'user-login' %}">Login</a>
+            </li>
+            <li class="nav-item {% if register %}active{% endif %}">
+                <a class="nav-link" href="{% url 'user-register' %}">Register</a>
+            </li>
+        {% endif %}
+        </ul>
+    </div>
+</nav>
