@@ -90,7 +90,6 @@ def update_weather(request):
             observation = owm.weather_at_place(f'{city},{country}')
             city_id = observation.get_location().get_ID()
 
-            """
             hour_forecast = owm.three_hours_forecast_at_id(city_id)
             start_time = hour_forecast.when_starts(timeformat='date')
             end_time = hour_forecast.when_ends(timeformat='date')
@@ -114,7 +113,7 @@ def update_weather(request):
                     'code': w_code,
                     'time_of_day': w_time_of_day
                 })
-            """
+
         w = observation.get_weather()
 
         context = {
@@ -129,7 +128,7 @@ def update_weather(request):
             'details': w.get_detailed_status(),
             'code': w.get_weather_code(),
             'time_of_day': time_of_day,
-            #'forecasts': my_forecasts
+            'forecasts': my_forecasts
         }
         return JsonResponse(context) 
 
