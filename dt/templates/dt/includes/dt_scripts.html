@@ -16,12 +16,14 @@
 
     // Starts the timers for each value
     function start_clock() {
-        // Increment seconds
-        setInterval(set_seconds(), seconds_inc);
-        // Increment minutes
-        setInterval(set_minutes(), minutes_inc);
-        // Increment hours
-        setInterval(set_hours(), hours_inc);
+        // Re-initialize all the values
+        set_seconds();
+        set_minutes();
+        set_hours();
+        // Set timers
+        setInterval(set_seconds, seconds_inc);
+        setInterval(set_minutes, minutes_inc);
+        setInterval(set_hours, hours_inc);
     }
 
     // Initialize all the values
@@ -32,9 +34,9 @@
     var seconds = new Date().getSeconds();
     var ticks = 60 - seconds;
     var secondsInterval = setInterval(function() {
-        $('#second').html(new Date().getSeconds());
+        set_seconds();
         ticks--;
-        if (ticks <= 0) {
+        if (ticks == 0) {
             window.clearInterval(secondsInterval);
             start_clock();
         }
