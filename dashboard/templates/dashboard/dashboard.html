@@ -2,10 +2,10 @@
 <html>
 <head>
     {% for module, values in modules.items %}
-        {% with id=values.id|escapejs %}
+        {% with id=values.id|escapejs type=values.type|escapejs %}
         {% include values.styles|escapejs %}
         <style>
-            #{{ id }} {
+            #{{ type }}-{{ id }} {
                 position: absolute;
                 z-index: 9;
                 top: {{values.top}}px;
@@ -26,7 +26,7 @@
     {% block update-content %}{% endblock %}
     <h1>{{ user }}'s Dashboard</h1>
     {% for module, values in modules.items %}
-        <div id="{{ values.id|escapejs }}">
+        <div id="{{ values.type|escapejs }}-{{ values.id|escapejs }}">
             {% include values.page|escapejs %}
         </div>
     {% endfor %}

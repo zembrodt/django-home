@@ -2,9 +2,9 @@
 
 {% block update-styles %}
     {% for module, values in modules.items %}
-        {% with id=values.id|escapejs %}    
+        {% with id=values.id|escapejs type=values.type|escapejs %}    
         <style>
-            #{{ id }} {
+            #{{ type }}-{{ id }} {
                 border: 1px solid #d3d3d3;
                 cursor: move;
             }
@@ -35,10 +35,10 @@
         modules = [];
 
         {% for module, values in modules.items %}
-            {% with id=values.id|escapejs %}
+            {% with id=values.id|escapejs type=values.type|escapejs %}
                 //modules.push("{{ id }}");
-                $('.{{ id }}').ready(function() {
-                    dragElement(document.getElementById('{{ id }}'));
+                $('.{{ type }}-{{ id }}').ready(function() {
+                    dragElement(document.getElementById('{{ type }}-{{ id }}'));
                 });
             {% endwith %}
         {% endfor %}
@@ -110,11 +110,15 @@
             var ids = [];
             var ids_to_save = [];
             $(document.body).find('div').each(function(){ ids.push(this.id) });
+            console.log(ids);
             for (i in ids) {
-                if (valid_ids.includes(ids[i])){
-                    ids_to_save.push(ids[i]);
+                for (valid_id in valid_ids) {
+                    if (ids[i].includes(valid_ids[valid_id])) {
+                        ids_to_save.push(ids[i]);
+                    }
                 }
             }
+            console.log(ids_to_save);
 
             console.log('Saving the valid ids: [' + ids_to_save +']');
 

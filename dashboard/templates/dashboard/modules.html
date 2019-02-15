@@ -5,6 +5,9 @@
     </head>
     <body>
         <h1>{{ request.user }}'s Modules</h1>
+        <small>
+            <a href="{% url 'add-module' %}">Add a new module</a>
+        </small>
         {% for module in modules %}
             <p>
                 Module type: {{ module.module_type }}<br/>

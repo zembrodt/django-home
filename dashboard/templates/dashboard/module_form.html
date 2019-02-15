@@ -1,0 +1,20 @@
+{% load crispy_forms_tags %}
+<html>
+<head>
+    <title>Add Module</title>
+</head>
+<body>
+    <div>
+        <form method="POST">
+            {% csrf_token %}
+            <fieldset>
+                <legend class="border-bottom mb-4">Add Module</legend>
+                {{ form|crispy }}
+            </fieldset>
+            <div>
+                <button type="submit">Add</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
