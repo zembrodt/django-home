@@ -13,13 +13,13 @@
 
     // Set the clock values
     function set_seconds() {
-        $('#second').html((new Date().getSeconds()).pad(2));
+        $('#second-{{ id }}').html((new Date().getSeconds()).pad(2));
     }
     function set_minutes() {
-        $('#minute').html((new Date().getMinutes()).pad(2));
+        $('#minute-{{ id }}').html((new Date().getMinutes()).pad(2));
     }
     function set_hours() {
-        $('#hour').html((new Date().getHours()).pad(2));
+        $('#hour-{{ id }}').html((new Date().getHours()).pad(2));
     }
 
     // Starts the timers for each value

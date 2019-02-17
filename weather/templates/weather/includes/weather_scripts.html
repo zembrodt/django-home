@@ -17,7 +17,7 @@
         return false;
     }
 
-    var form = document.getElementById('latlon-form');
+    var form = document.getElementById('latlon-form-{{ id }}');
     if (form.attachEvent) {
         form.attachEvent("submit", processForm);
     } else {
@@ -56,46 +56,47 @@
             dataType: "json",
             data:{
                     //csrfmiddlewaretoken: '{{ csrf_token }}',
+                    id: '{{ id }}',
                     lat: latitude,
                     lon: longitude
             },
             success: function(data) 
             {
-                $('#lat').html(data.latitude);
-                $('#lon').html(data.longitude);
-                $('#city').html(data.city);
-                $('#country').html(data.country);
-                $('#wind_speed').html(data.wind.speed);
-                $('#wind_deg').html(data.wind.deg);
-                $('#wind_deg-icon').removeAttr('class');
-                $('#wind_deg-icon').addClass('wi wi-wind towards-' + data.wind.deg + '-deg');
-                $('#humidity').html(data.humidity);
-                $('#temp').html(data.temperature.temp);
-                $('#temp_min').html(data.temperature.temp_min);
-                $('#temp_max').html(data.temperature.temp_max);
-                $('#status').html(data.status);
-                $('#details').html(data.details);
-                $('#code').html(data.code);
-                $('#weather-icon').removeAttr('class');
-                $('#weather-icon').addClass('wi wi-owm-' + data.time_of_day + '-' + data.code);
+                $('#lat-{{ id }}').html(data.latitude);
+                $('#lon-{{ id }}').html(data.longitude);
+                $('#city-{{ id }}').html(data.city);
+                $('#country-{{ id }}').html(data.country);
+                $('#wind_speed-{{ id }}').html(data.wind.speed);
+                $('#wind_deg-{{ id }}').html(data.wind.deg);
+                $('#wind_deg-icon-{{ id }}').removeAttr('class');
+                $('#wind_deg-icon-{{ id }}').addClass('wi wi-wind towards-' + data.wind.deg + '-deg');
+                $('#humidity-{{ id }}').html(data.humidity);
+                $('#temp-{{ id }}').html(data.temperature.temp);
+                $('#temp_min-{{ id }}').html(data.temperature.temp_min);
+                $('#temp_max-{{ id }}').html(data.temperature.temp_max);
+                $('#status-{{ id }}').html(data.status);
+                $('#details-{{ id }}').html(data.details);
+                $('#code-{{ id }}').html(data.code);
+                $('#weather-icon-{{ id }}').removeAttr('class');
+                $('#weather-icon-{{ id }}').addClass('wi wi-owm-' + data.time_of_day + '-' + data.code);
 
-                forecasts = [];
-                // Create forecasts
-                for (i in data.forecasts) {
-                    w = data.forecasts[i]
-                    forecasts.push('<p>' +
-                        '<strong>Time: ' + w.time + '</strong><br/>' + 
-                        'Temp: ' + w.temp.temp + ' F (' + w.temp.temp_min + ' - ' + w.temp.temp_max + ')<br/>' +
-                        'Status: ' + w.status + '<br/>' +
-                        'Code: ' + w.code + '<br/>' +
-                        'Time of day: ' + w.time_of_day + '<br/>' +
-                        'Icon: <i class="wi wi-owm-' + w.time_of_day + '-' + w.code + '"></i>' +
-                        '</p>' 
-                    );
+                if ($('#forecasts-{{ id }}').length != 0) {
+                    forecasts = [];
+                    // Create forecasts
+                    for (i in data.forecasts) {
+                        w = data.forecasts[i]
+                        forecasts.push('<p>' +
+                            '<strong>Time: ' + w.time + '</strong><br/>' + 
+                            'Temp: ' + w.temp.temp + ' F (' + w.temp.temp_min + ' - ' + w.temp.temp_max + ')<br/>' +
+                            'Status: ' + w.status + '<br/>' +
+                            'Code: ' + w.code + '<br/>' +
+                            'Time of day: ' + w.time_of_day + '<br/>' +
+                            'Icon: <i class="wi wi-owm-' + w.time_of_day + '-' + w.code + '"></i>' +
+                            '</p>' 
+                        );
+                    }
+                    $('#forecasts-{{ id }}').html(forecasts)
                 }
-                $('#forecasts').html(forecasts)
-                
-                
             }
         })
         /*x.innerHTML="Latitude: " + position.coords.latitude + 

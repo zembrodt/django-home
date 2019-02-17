@@ -15,6 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 from weather import views as weather_views
 
 urlpatterns = [
@@ -24,3 +26,6 @@ urlpatterns = [
     path('update_weather/', weather_views.update_weather, name='weather-update'),
     path('user/', include ('users.urls'))
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

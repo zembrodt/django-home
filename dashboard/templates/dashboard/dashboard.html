@@ -3,7 +3,7 @@
 {% block styles %}
     {% for module, values in modules.items %}
         {% with id=values.id|escapejs type=values.type|escapejs %}
-        {% include values.styles|escapejs %}
+        {% include values.styles|escapejs with id=id %}
         <style>
             #{{ type }}-{{ id }} {
                 position: absolute;
@@ -22,14 +22,15 @@
     <h1>{{ user }}'s Dashboard</h1>
     {% for module, values in modules.items %}
         <div id="{{ values.type|escapejs }}-{{ values.id|escapejs }}">
-            {% include values.page|escapejs %}
+            {#% include values.page|escapejs %#}
+            {{ values.content }}
         </div>
     {% endfor %}
 {% endblock content %}
 
 {% block scripts %}
     {% for module, values in modules.items %}  
-        {% include values.scripts|escapejs %}
+        {% include values.scripts|escapejs with id=values.id|escapejs %}
     {% endfor %}
 
     {% block update-scripts %}{% endblock update-scripts %}

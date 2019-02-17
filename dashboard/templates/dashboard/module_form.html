@@ -7,11 +7,30 @@
             {% csrf_token %}
             <fieldset>
                 <legend class="border-bottom mb-4">Add Module</legend>
-                {{ form|crispy }}
+                {{ module_form }}
             </fieldset>
+            <div id='extended_form'></div>
             <div>
                 <button type="submit">Add</button>
             </div>
         </form>
     </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        $('#id_module_type').change(function() {
+            $.ajax({
+                type: 'GET',
+                url: '/modules/add/',
+                dataType: 'json',
+                data: {
+                    module_type: $('#id_module_type option:selected').text()
+                },
+                success: function(data) {
+                    $('#extended_form').html(data.extended_form);
+                }
+            })
+        });
+    </script>
 {% endblock %}

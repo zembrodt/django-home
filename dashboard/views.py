@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import redirect, render, get_object_or_404
 from django.http.response import JsonResponse
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
@@ -7,8 +7,17 @@ from django.views.generic import (
     ListView,
     CreateView,
 )
+from django.template.loader import get_template
 from users.models import Profile
 from dashboard.models import Module
+from dt import views as dt_views
+from photos import views as photos_views
+from weather import views as weather_views
+from .forms import (
+    ModuleCreateForm,
+    DateForm,
+    WeatherForm
+)
 import json, re
 
 DEFAULT_Z_INDEX = 9
@@ -22,7 +31,7 @@ def home(request):
 @login_required
 def dashboard(request):
     context = {
-        'modules': generate_context(request.user),
+        'modules': generate_context(request),
         'user': request.user
     }
     return render(request, 'dashboard/dashboard.html', context)
@@ -30,7 +39,7 @@ def dashboard(request):
 @login_required
 def update(request):
     context = {
-        'modules': generate_context(request.user),
+        'modules': generate_context(request),
         'user': request.user
     }
     return render(request, 'dashboard/dashboard_update.html', context)
@@ -97,22 +106,105 @@ class ModuleCreateView(LoginRequiredMixin, CreateView):
         form.instance.owner = user
         return super().form_valid(form)
 
-def generate_context(user):
-    user = Profile.objects.filter(user=user).first()
+def module_create(request):
+    if request.is_ajax():
+        if request.method == 'GET':
+            module_type = request.GET.get('module_type')
+            # NOTE: do this with actual ids later
+            form_render = None
+            if module_type == 'Datetime':
+                dt_form = DateForm()
+                template = get_template('dt/dt_form.html')
+                context = {
+                    'dt_form': dt_form
+                }
+                form_render = template.render(context)
+            elif module_type == 'Weather':
+                weather_form = WeatherForm()
+                template = get_template('weather/weather_form.html')
+                context = {
+                    'weather_form': weather_form
+                }
+                form_render = template.render(context)
+            else:
+                # What do here?
+                form_render = None
+            context = {
+                'extended_form': form_render
+            }
+            return JsonResponse(context)
+    if request.method == 'POST':
+        module_form = ModuleCreateForm(request.POST)
+        if module_form.is_valid():
+            module_type = module_form.cleaned_data['module_type']
+            module = module_form.save(commit=False)
+            user = Profile.objects.get(user=request.user)
+            print(f'We have a module! {module}')
+            print(f'Type is: \'{module_type}\'')
+            #extended_form = None
+            # NOTE: this is also temporary, use actual module ids
+            if str(module_type) == 'Datetime':
+                print('we got here')
+                dt_form = DateForm(request.POST)#, module=module)#, instance=module)
+                if dt_form.is_valid():
+                    dt = dt_form.save(commit=False)
+                    module.owner = user
+                    module.save()
+                    dt.module = module
+                    dt.save()
+                    print(f'We have DT module! {dt}')
+                else:
+                    print('Form was not valid')
+            elif str(module_type) == 'Weather':
+                weather_form = WeatherForm(request.POST)#, module=module)#, instance=module)
+                if weather_form.is_valid():
+                    weather = weather_form.save(commit=False)
+                    module.owner = user
+                    module.save()
+                    weather.module = module
+                    weather.save()
+                    print(f'We have Weather module! {weather}')
+            else:
+                # TODO: what do?
+                pass
+            return redirect('user-modules') # Can also redirect to an object's get_absolute_url()
+    else:
+        module_form = ModuleCreateForm()
+    context = {
+        'module_form': module_form
+    }
+    return render(request, 'dashboard/module_form.html', context)
+
+
+def generate_context(request):
+    user = Profile.objects.filter(user=request.user).first()
     modules = {}
     z_index = DEFAULT_Z_INDEX # TODO: store this value in module settings?
     for module in Module.objects.filter(owner=user):
         t = module.module_type.module_type
         # TODO: may need to assign this dict key to pk of module to allow multiple copies
+        page_render = None
+        if t == 'dt':
+            page_render = dt_views.dt(request, module)
+        elif t == 'photos':
+            page_render = photos_views.photos(request, module)
+        elif t == 'weather':
+            page_render = weather_views.weather(request, module)
+
+        print(f'page_render: {page_render}')
+
         modules[module.id] = {
             'id': module.id,
             'type': t,
             'styles': f'{t}/includes/{t}_styles.html',
             'scripts': f'{t}/includes/{t}_scripts.html',
-            'page': f'{t}/{t}.html',
+            #'page': f'{t}/{t}.html',
             'top': module.y,
             'left': module.x,
             'z_index': z_index,
+            'content': page_render,
         }
         z_index += 1
     return modules
+
+# Module-specific gets

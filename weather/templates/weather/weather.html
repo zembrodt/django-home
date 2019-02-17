@@ -2,23 +2,25 @@
 
 <h2>Current Weather:</h2>
 <p>
-    City: <span id="city">{{ city }}</span>, <span id="country">{{ country }}</span><br/>
-    Coords: (<span id="lat">{{ latitude }}</span>, <span id="lon">{{ longitude }}</span>)<br/>
-    Wind speed: <span id="wind_speed">{{ wind.speed }}</span><br/>
-    Wind degree: <span id="wind_deg">{{ wind.deg }}</span>&nbsp;<i id="wind_deg-icon"></i><br/>
-    Humidity: <span id="humidity">{{ humidity }}</span>%<br/>
-    Temperature: <span id="temp">{{ temperature.temp }}</span> F (<span id="temp_min">{{ temperature.temp_min }}</span> - <span id="temp_max">{{ temperature.temp_max }}</span>)<br/>
-    Weather status: <span id="status">{{ status }}</span><br/>
-    Detailed status: <span id="details">{{ details }}</span><br/>
-    Weather code: <span id="code">--</span><br/>
-    Icon: <i id="weather-icon" class="wi wi-na"></i>
+    City: <span id="city-{{ id }}">{{ city }}</span>, <span id="country-{{ id }}">{{ country }}</span><br/>
+    Coords: (<span id="lat-{{ id }}">{{ latitude }}</span>, <span id="lon-{{ id }}">{{ longitude }}</span>)<br/>
+    Wind speed: <span id="wind_speed-{{ id }}">{{ wind.speed }}</span><br/>
+    Wind degree: <span id="wind_deg-{{ id }}">{{ wind.deg }}</span>&nbsp;<i id="wind_deg-icon-{{ id }}"></i><br/>
+    Humidity: <span id="humidity-{{ id }}">{{ humidity }}</span>%<br/>
+    Temperature: <span id="temp-{{ id }}">{{ temperature.temp }}</span> F (<span id="temp_min-{{ id }}">{{ temperature.temp_min }}</span> - <span id="temp_max-{{ id }}">{{ temperature.temp_max }}</span>)<br/>
+    Weather status: <span id="status-{{ id }}">{{ status }}</span><br/>
+    Detailed status: <span id="details-{{ id }}">{{ details }}</span><br/>
+    Weather code: <span id="code-{{ id }}">--</span><br/>
+    Icon: <i id="weather-icon-{{ id }}" class="wi wi-na"></i>
 </p>
 
-<form id="latlon-form">
-    <input type="text" id="lat-in" name="lat-in" /><br />
-    <input type="text" id="lon-in" name="lon-in" /><br />
+<form id="latlon-form-{{ id }}">
+    <input type="text" id="lat-in-{{ id }}" name="lat-in" /><br />
+    <input type="text" id="lon-in-{{ id }}" name="lon-in" /><br />
     <button type="submit">Update</button>
 </form>
 
-<h2>Forecast:</h2>
-<div id="forecasts"></div>
+{% if forecast %}
+    <h2>Forecast:</h2>
+    <div id="forecasts-{{ id }}"></div>
+{% endif %}
