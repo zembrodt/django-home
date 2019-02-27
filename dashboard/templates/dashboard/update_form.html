@@ -1,0 +1,18 @@
+{% extends "dashboard/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div>
+        <form method="POST">
+            {% csrf_token %}
+            <fieldset>
+                <legend class="border-bottom mb-4">Update {{ module_type }} Module</legend>
+                {{ module_form|crispy }}
+            </fieldset>
+            <div id='extended_form'></div>
+            <div>
+                <button type="submit">Update</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}

@@ -16,6 +16,7 @@ from weather import views as weather_views
 from .forms import (
     ModuleCreateForm,
     DateForm,
+    PhotosForm,
     WeatherForm
 )
 import json, re
@@ -30,16 +31,20 @@ def home(request):
 
 @login_required
 def dashboard(request):
+    modules, unique_modules = generate_context(request)
     context = {
-        'modules': generate_context(request),
+        'modules': modules,
+        'unique_modules': unique_modules,
         'user': request.user
     }
     return render(request, 'dashboard/dashboard.html', context)
 
 @login_required
 def update(request):
+    modules, unique_modules = generate_context(request)
     context = {
-        'modules': generate_context(request),
+        'modules': modules,
+        'unique_modules': unique_modules,
         'user': request.user
     }
     return render(request, 'dashboard/dashboard_update.html', context)
@@ -119,6 +124,13 @@ def module_create(request):
                     'dt_form': dt_form
                 }
                 form_render = template.render(context)
+            elif module_type == 'Photos':
+                photos_form = PhotosForm()
+                template = get_template('photos/photos_form.html')
+                context = {
+                    'photos_form': photos_form
+                }
+                form_render = template.render(context)
             elif module_type == 'Weather':
                 weather_form = WeatherForm()
                 template = get_template('weather/weather_form.html')
@@ -155,6 +167,15 @@ def module_create(request):
                     print(f'We have DT module! {dt}')
                 else:
                     print('Form was not valid')
+            if str(module_type) == 'Photos':
+                photos_form = PhotosForm(request.POST)#, module=module)#, instance=module)
+                if photos_form.is_valid():
+                    photos = photos_form.save(commit=False)
+                    module.owner = user
+                    module.save()
+                    photos.module = module
+                    photos.save()
+                    print(f'We have Photos module! {photos}')
             elif str(module_type) == 'Weather':
                 weather_form = WeatherForm(request.POST)#, module=module)#, instance=module)
                 if weather_form.is_valid():
@@ -175,13 +196,30 @@ def module_create(request):
     }
     return render(request, 'dashboard/module_form.html', context)
 
+def module_update(request, **kwargs):
+    module = get_object_or_404(Module, id=kwargs['pk'])
+    #module = Module.objects.filter(pk=kwargs['pk']).first()
+    # TODO: check if this module is owned by the user?
+    t = module.module_type.module_type
+    if t == 'dt':
+        return dt_views.update_dt(request, module)
+    elif t == 'photos':
+        return photos_views.update_photos(request, module)
+    elif t == 'weather':
+        return weather_views.update_weather(request, module)
+    else:
+        # TODO: return a 404 page
+        pass
 
 def generate_context(request):
     user = Profile.objects.filter(user=request.user).first()
     modules = {}
+    unique_modules = []
     z_index = DEFAULT_Z_INDEX # TODO: store this value in module settings?
     for module in Module.objects.filter(owner=user):
         t = module.module_type.module_type
+        if t not in unique_modules:
+            unique_modules.append(t)
         # TODO: may need to assign this dict key to pk of module to allow multiple copies
         page_render = None
         if t == 'dt':
@@ -205,6 +243,6 @@ def generate_context(request):
             'content': page_render,
         }
         z_index += 1
-    return modules
+    return modules, unique_modules
 
 # Module-specific gets

@@ -23,7 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('dashboard.urls')),
     #path('dashboard/', include('dashboard.urls')),
-    path('update_weather/', weather_views.update_weather, name='weather-update'),
+    path('update_weather/', weather_views.update_weather_stats, name='weather-update'),
     path('user/', include ('users.urls'))
 ]
 

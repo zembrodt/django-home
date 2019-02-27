@@ -12,5 +12,8 @@
             X: {{ module.x }}<br/>
             y: {{ module.y }}
         </p>
+        <p>
+            <a href="{% url 'update-module' module.id %}">Update</a>
+        </p>
     {% endfor %}
 {% endblock %}

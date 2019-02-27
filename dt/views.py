@@ -1,5 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.template.loader import get_template
+from .models import Datetime
+from dashboard.forms import DateForm
 
 # NOTE: placeholder
 def dt(request, module):
@@ -8,3 +10,15 @@ def dt(request, module):
         'id': module.id
     }
     return template.render(context)
+
+def update_dt(request, module):
+    instance = Datetime.objects.filter(module=module).first()
+    form = DateForm(request.POST or None, instance=instance)
+    if form.is_valid():
+        form.save()
+        return redirect('user-modules')
+    context = {
+        'module_form': form,
+        'module_type': 'Datetime'
+    }
+    return render(request, 'dashboard/update_form.html', context)

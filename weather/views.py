@@ -1,10 +1,17 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.http.response import JsonResponse
 from django.template.loader import get_template
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import (
+    UpdateView,
+)
 from pyowm.exceptions.api_call_error import APICallTimeoutError
 from urllib.request import urlopen
 from datetime import datetime, timedelta
 from dashboard.models import Module
+from dashboard.forms import (
+    WeatherForm
+)
 from .models import Weather
 import json, math, pyowm
 
@@ -50,7 +57,7 @@ def home(request):
     }
     return render(request, 'dashboard/dashboard.html', context)
 """
-def update_weather(request):
+def update_weather_stats(request):
     if request.method == 'GET':
         module_id = request.GET.get('id')
         latitude = request.GET.get('lat')
@@ -192,3 +199,15 @@ def get_distance(coords1, coords2):
     y = math.radians(lat1 - lat2)
     dist = math.sqrt(x**2 + y**2)
     return dist
+
+def update_weather(request, module):
+    instance = Weather.objects.filter(module=module).first()
+    form = WeatherForm(request.POST or None, instance=instance)
+    if form.is_valid():
+        form.save()
+        return redirect('user-modules')
+    context = {
+        'module_form': form,
+        'module_type': 'Weather'
+    }
+    return render(request, 'dashboard/update_form.html', context)

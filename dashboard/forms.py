@@ -1,6 +1,7 @@
 from django import forms
 from .models import Module
 from dt.models import Datetime
+from photos.models import Photos
 from weather.models import Weather
 
 class ModuleCreateForm(forms.ModelForm):
@@ -59,3 +60,9 @@ class WeatherForm(forms.ModelForm):
             })
         }
         '''
+
+class PhotosForm(forms.ModelForm):
+    class Meta:
+        model = Photos
+        #fields = ['is_background', 'width', 'height']
+        fields = ['width', 'height']

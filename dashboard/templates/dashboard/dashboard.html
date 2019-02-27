@@ -1,18 +1,22 @@
 
 {% extends "dashboard/base.html" %}
 {% block styles %}
+    <style>
     {% for module, values in modules.items %}
         {% with id=values.id|escapejs type=values.type|escapejs %}
-        {% include values.styles|escapejs with id=id %}
-        <style>
+        {#% include values.styles|escapejs with id=id %#}
             #{{ type }}-{{ id }} {
                 position: absolute;
                 z-index: {{ values.z_index }};
                 top: {{ values.top }}px;
                 left: {{ values.left }}px;
             }
-        </style>
+        
         {% endwith %}
+    {% endfor %}
+    </style>
+    {% for module in unique_modules %}
+        {% include module|escapejs|add:"/includes/"|add:module|escapejs|add:"_styles.html" %}
     {% endfor %}
     {% block update-styles %}{% endblock update-styles %}
 {% endblock styles %}
@@ -29,8 +33,11 @@
 {% endblock content %}
 
 {% block scripts %}
-    {% for module, values in modules.items %}  
-        {% include values.scripts|escapejs with id=values.id|escapejs %}
+    {#% for module, values in modules.items %#}  
+        {#% include values.scripts|escapejs with id=values.id|escapejs %#}
+    {#% endfor %#}
+    {% for module in unique_modules %}
+        {% include module|escapejs|add:"/includes/"|add:module|escapejs|add:"_scripts.html" %}
     {% endfor %}
 
     {% block update-scripts %}{% endblock update-scripts %}
