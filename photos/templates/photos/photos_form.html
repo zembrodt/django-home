@@ -1,3 +1,14 @@
 <fieldset>
+    {% for hidden in photos_form.hidden_fields %}
+        {{ hidden }}
+    {% endfor %}
+
     {{ photos_form }}
+
+    {{ formset.management_form }}
+    {#{ formset }#}
+
+    {% for form in formset %}
+        {{ form }}
+    {% endfor %}
 </fieldset>

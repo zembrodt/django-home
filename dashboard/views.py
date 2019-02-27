@@ -1,4 +1,5 @@
 from django.shortcuts import redirect, render, get_object_or_404
+from django.forms import modelformset_factory
 from django.http.response import JsonResponse
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
@@ -16,9 +17,10 @@ from weather import views as weather_views
 from .forms import (
     ModuleCreateForm,
     DateForm,
-    PhotosForm,
     WeatherForm
 )
+from photos.forms import ImageForm, PhotosForm
+from photos.models import Image
 import json, re
 
 DEFAULT_Z_INDEX = 9
@@ -112,6 +114,7 @@ class ModuleCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 def module_create(request):
+    ImageFormSet = modelformset_factory(Image, form=ImageForm, extra=1)
     if request.is_ajax():
         if request.method == 'GET':
             module_type = request.GET.get('module_type')
@@ -126,9 +129,12 @@ def module_create(request):
                 form_render = template.render(context)
             elif module_type == 'Photos':
                 photos_form = PhotosForm()
+                formset = ImageFormSet(queryset=Image.objects.none())
+                print(f'formset: {formset}')
                 template = get_template('photos/photos_form.html')
                 context = {
-                    'photos_form': photos_form
+                    'photos_form': photos_form,
+                    'formset': formset
                 }
                 form_render = template.render(context)
             elif module_type == 'Weather':
@@ -169,13 +175,21 @@ def module_create(request):
                     print('Form was not valid')
             if str(module_type) == 'Photos':
                 photos_form = PhotosForm(request.POST)#, module=module)#, instance=module)
-                if photos_form.is_valid():
+                formset = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none())
+                if photos_form.is_valid() and formset.is_valid():
                     photos = photos_form.save(commit=False)
                     module.owner = user
                     module.save()
                     photos.module = module
                     photos.save()
                     print(f'We have Photos module! {photos}')
+                    for form in formset.cleaned_data:
+                        #this helps to not crash if the user   
+                        #do not upload all the photos
+                        if form:
+                            image_form = form['image']
+                            image = Image(photos_module=photos, image=image_form)
+                            image.save()
             elif str(module_type) == 'Weather':
                 weather_form = WeatherForm(request.POST)#, module=module)#, instance=module)
                 if weather_form.is_valid():
