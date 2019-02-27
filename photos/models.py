@@ -3,9 +3,11 @@ from dashboard.models import Module
 
 class Photos(models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE)
+    is_background = models.BooleanField(default=False)
     width = models.IntegerField(blank=True, null=True)
     height = models.IntegerField(blank=True, null=True)
     
+
     # NOTE: this will need to be modified in the future to allow multiple photos per photos module
     image = models.ImageField(default='default_bg.jpg', upload_to='background_pics')
 
