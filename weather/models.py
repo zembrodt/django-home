@@ -2,7 +2,7 @@ from django.db import models
 from dashboard.models import Module
 
 class Weather(models.Model):
-    module = models.ForeignKey(Module, on_delete=models.CASCADE)
+    module = models.ForeignKey(Module, related_name='weathers', on_delete=models.CASCADE)
     current_location = models.BooleanField(default=True)
     country = models.CharField(max_length=100, null=True)
     state = models.CharField(max_length=100, null=True)

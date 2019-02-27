@@ -11,7 +11,7 @@ class ModuleType(models.Model):
         return f'{self.name}'
 
 class Module(models.Model):
-    owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    owner = models.ForeignKey(Profile, related_name='modules', on_delete=models.CASCADE)
     module_type = models.ForeignKey(ModuleType, on_delete=models.CASCADE)
     x = models.IntegerField()
     y = models.IntegerField()
