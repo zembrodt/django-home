@@ -11,3 +11,5 @@ class ImageForm(forms.ModelForm):
     class Meta:
         model = Image
         fields = ['image']
+
+ImageFormSet = forms.modelformset_factory(Image, form=ImageForm, extra=1)

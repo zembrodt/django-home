@@ -29,6 +29,13 @@
                 },
                 success: function(data) {
                     $('#extended_form').html(data.extended_form);
+                    var extended_script = document.createElement('script');
+                    extended_script.onload = function () {
+                        //do stuff with the script
+                    };
+                    extended_script.src = data.extended_script;
+
+                    document.body.appendChild(extended_script);
                 }
             })
         });

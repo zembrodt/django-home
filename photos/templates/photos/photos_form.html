@@ -8,7 +8,13 @@
     {{ formset.management_form }}
     {#{ formset }#}
 
+
     {% for form in formset %}
-        {{ form }}
+        <div class="row form-row spacer">
+            {{ form }}
+            <div class="input-group-append">
+                <button class="btn btn-success add-form-row">+</button>
+            </div>
+        </div>
     {% endfor %}
 </fieldset>

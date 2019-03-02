@@ -1,5 +1,4 @@
 from django.shortcuts import redirect, render, get_object_or_404
-from django.forms import modelformset_factory
 from django.http.response import JsonResponse
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
@@ -9,6 +8,7 @@ from django.views.generic import (
     CreateView,
 )
 from django.template.loader import get_template
+from django.templatetags.static import static
 from users.models import Profile
 from dashboard.models import Module
 from dt import views as dt_views
@@ -19,7 +19,7 @@ from .forms import (
     DateForm,
     WeatherForm
 )
-from photos.forms import ImageForm, PhotosForm
+from photos.forms import ImageForm, PhotosForm, ImageFormSet
 from photos.models import Image
 import json, re
 
@@ -114,12 +114,12 @@ class ModuleCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 def module_create(request):
-    ImageFormSet = modelformset_factory(Image, form=ImageForm, extra=1)
     if request.is_ajax():
         if request.method == 'GET':
             module_type = request.GET.get('module_type')
             # NOTE: do this with actual ids later
             form_render = None
+            form_script = None
             if module_type == 'Datetime':
                 dt_form = DateForm()
                 template = get_template('dt/dt_form.html')
@@ -130,13 +130,13 @@ def module_create(request):
             elif module_type == 'Photos':
                 photos_form = PhotosForm()
                 formset = ImageFormSet(queryset=Image.objects.none())
-                print(f'formset: {formset}')
                 template = get_template('photos/photos_form.html')
                 context = {
                     'photos_form': photos_form,
                     'formset': formset
                 }
                 form_render = template.render(context)
+                form_script = 'photos/scripts/photos_form.js'
             elif module_type == 'Weather':
                 weather_form = WeatherForm()
                 template = get_template('weather/weather_form.html')
@@ -148,7 +148,8 @@ def module_create(request):
                 # What do here?
                 form_render = None
             context = {
-                'extended_form': form_render
+                'extended_form': form_render,
+                'extended_script': static(form_script)
             }
             return JsonResponse(context)
     if request.method == 'POST':
@@ -162,7 +163,6 @@ def module_create(request):
             #extended_form = None
             # NOTE: this is also temporary, use actual module ids
             if str(module_type) == 'Datetime':
-                print('we got here')
                 dt_form = DateForm(request.POST)#, module=module)#, instance=module)
                 if dt_form.is_valid():
                     dt = dt_form.save(commit=False)
@@ -184,11 +184,15 @@ def module_create(request):
                     photos.save()
                     print(f'We have Photos module! {photos}')
                     for form in formset.cleaned_data:
+                        print('We are in the formset!')
+                        print(f'form: {form}')
                         #this helps to not crash if the user   
                         #do not upload all the photos
                         if form:
                             image_form = form['image']
+                            print(f'image_form: {image_form}')
                             image = Image(photos_module=photos, image=image_form)
+                            print(f'image: {image}')
                             image.save()
             elif str(module_type) == 'Weather':
                 weather_form = WeatherForm(request.POST)#, module=module)#, instance=module)
