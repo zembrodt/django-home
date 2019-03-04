@@ -13,11 +13,13 @@ from dashboard.forms import (
     WeatherForm
 )
 from .models import Weather
-import json, math, pyowm
+import json, math, pyowm, os
 
-MAPQUEST_KEY = 'fQlDAwzUnxmZlLuaA4Q1o9vpsqHdL8PK'
-GEONAMES_USERNAME = 'zembrodt'
-owm = pyowm.OWM('6144810fddc53644a589937de8d3ea15')
+MAPQUEST_KEY = os.environ.get('MAPQUEST_KEY')
+OWM_KEY = os.environ.get('OWM_KEY')
+GEONAMES_USERNAME = os.environ.get('GEONAMES_USER')
+
+owm = pyowm.OWM(OWM_KEY)
 
 # NOTE: placeholder
 def weather(request, module):

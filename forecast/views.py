@@ -10,13 +10,14 @@ from .forms import ForecastForm
 from weather.views import (
     get_location,
     get_timezone,
-    get_distance
+    get_distance,
+    MAPQUEST_KEY,
+    OWM_KEY,
+    GEONAMES_USERNAME,
 )
 import json, math, pyowm
 
-MAPQUEST_KEY = 'fQlDAwzUnxmZlLuaA4Q1o9vpsqHdL8PK'
-GEONAMES_USERNAME = 'zembrodt'
-owm = pyowm.OWM('6144810fddc53644a589937de8d3ea15')
+owm = pyowm.OWM(OWM_KEY)
 
 # NOTE: placeholder
 def forecast(request, module):
