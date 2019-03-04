@@ -22,9 +22,9 @@ from weather import views as weather_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('dashboard.urls')),
-    #path('dashboard/', include('dashboard.urls')),
-    path('update_weather/', weather_views.update_weather_stats, name='weather-update'),
-    path('user/', include ('users.urls'))
+    path('user/', include ('users.urls')),
+    path('forecast/', include('forecast.urls')),
+    path('weather/', include('weather.urls')),
 ]
 
 if settings.DEBUG:

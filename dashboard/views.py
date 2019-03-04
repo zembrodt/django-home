@@ -13,6 +13,7 @@ from django.templatetags.static import static
 from users.models import Profile
 from dashboard.models import Module
 from dt import views as dt_views
+from forecast import views as forecast_views
 from photos import views as photos_views
 from weather import views as weather_views
 from .forms import (
@@ -20,6 +21,8 @@ from .forms import (
     DateForm,
     WeatherForm
 )
+from forecast.forms import ForecastForm
+from forecast.models import Forecast
 from photos.forms import ImageForm, PhotosForm, ImageFormSet
 from photos.models import Image, Photos
 import json, re
@@ -139,6 +142,13 @@ def module_create(request):
                     'dt_form': dt_form
                 }
                 form_render = template.render(context)
+            elif module_type == 'Forecast':
+                forecast_form = ForecastForm()
+                template = get_template('forecast/forecast_form.html')
+                context = {
+                    'forecast_form': forecast_form
+                }
+                form_render = template.render(context)
             elif module_type == 'Photos':
                 photos_form = PhotosForm()
                 formset = ImageFormSet(queryset=Image.objects.none())
@@ -183,6 +193,17 @@ def module_create(request):
                     dt.module = module
                     dt.save()
                     print(f'We have DT module! {dt}')
+                else:
+                    print('Form was not valid')
+            elif str(module_type) == 'Forecast':
+                forecast_form = ForecastForm(request.POST)
+                if forecast_form.is_valid():
+                    forecast = forecast_form.save(commit=False)
+                    module.owner = user
+                    module.save()
+                    forecast.module = module
+                    forecast.save()
+                    print(f'We have Forecast module! {forecast}')
                 else:
                     print('Form was not valid')
             if str(module_type) == 'Photos':
@@ -233,6 +254,8 @@ def module_update(request, **kwargs):
     t = module.module_type.module_type
     if t == 'dt':
         return dt_views.update_dt(request, module)
+    elif t == 'forecast':
+        return forecast_views.update_forecast(request, module)
     elif t == 'photos':
         return photos_views.update_photos(request, module)
     elif t == 'weather':
@@ -254,6 +277,8 @@ def generate_context(request):
         page_render = None
         if t == 'dt':
             page_render = dt_views.dt(request, module)
+        elif t == 'forecast':
+            page_render = forecast_views.forecast(request, module)
         elif t == 'photos':
             page_render = photos_views.photos(request, module)
             if Photos.objects.filter(module=module).first().is_background:

@@ -53,7 +53,7 @@ class WeatherForm(forms.ModelForm):
     '''
     class Meta:
         model = Weather
-        fields = ['show_forecast', 'forecast_length']
+        fields = ['city', 'country']
         '''
         widgets = {
             'show_forecast': forms.CheckboxInput(attrs={

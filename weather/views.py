@@ -19,52 +19,20 @@ MAPQUEST_KEY = 'fQlDAwzUnxmZlLuaA4Q1o9vpsqHdL8PK'
 GEONAMES_USERNAME = 'zembrodt'
 owm = pyowm.OWM('6144810fddc53644a589937de8d3ea15')
 
-#observation = owm.weather_at_place('Lexington,US')
-#w = observation.get_weather()
-
 # NOTE: placeholder
 def weather(request, module):
-    weather = Weather.objects.get(module=module)
+    #weather = Weather.objects.get(module=module)
     template = get_template('weather/weather.html')
     context = {
-        'id': module.id,
-        'forecast': weather.show_forecast
+        'id': module.id
     }
     return template.render(context)
 
-"""
-def home(request):
-    # Default location
-    observation = owm.weather_at_place('London,UK')
-    loc = observation.get_location()
-    w = observation.get_weather()
-
-    # Specify what modules to include in the dashboard
-    modules = ['dt', 'weather']
-
-    context = {
-        'latitude': loc.get_lat(),
-        'longitude': loc.get_lon(),
-        'city': 'London',
-        'country': 'UK',
-        'wind': w.get_wind(),
-        'humidity': w.get_humidity(),
-        'temperature': w.get_temperature('fahrenheit'),
-        'status': w.get_status(),
-        'details': w.get_detailed_status(),
-        'code': w.get_weather_code(),
-        'modules': modules
-    }
-    return render(request, 'dashboard/dashboard.html', context)
-"""
 def update_weather_stats(request):
     if request.method == 'GET':
         module_id = request.GET.get('id')
         latitude = request.GET.get('lat')
         longitude = request.GET.get('lon')
-
-        module = Module.objects.get(pk=module_id)
-        weather = Weather.objects.get(module=module)
 
         print(f'latitude: {latitude}\nlongitude: {longitude}')
 
@@ -75,8 +43,6 @@ def update_weather_stats(request):
             # Default location
             observation = owm.weather_at_place('London,UK')
         else:
-            print('we got here!')
-            
             utc_now = datetime.utcnow()
 
             city, country = get_location(latitude, longitude)
@@ -114,37 +80,6 @@ def update_weather_stats(request):
             observation = owm.weather_at_place(f'{city},{country}')
             city_id = observation.get_location().get_ID()
 
-            # Calculate forecasts
-            if weather.show_forecast:
-                hour_forecast = owm.three_hours_forecast_at_id(city_id)
-                start_time = hour_forecast.when_starts(timeformat='date')
-                end_time = hour_forecast.when_ends(timeformat='date')
-                print(f'hour forecast start: {start_time}\nhour forecast end: {end_time}')
-                forecasts = hour_forecast.get_forecast()
-                print(f'num of forecasts: {forecasts.count_weathers()}')
-                my_forecasts = []
-                cap_forecast = True if weather.forecast_length >= 0 else False
-                i = 0
-                for w in forecasts.get_weathers():
-                    if i >= weather.forecast_length and cap_forecast:
-                        break
-                    w_time = w.get_reference_time(timeformat='date') + timedelta(hours=utc_offset)
-                    w_temp = w.get_temperature(unit='fahrenheit')
-                    w_status = w.get_status()
-                    w_code = w.get_weather_code()
-                    print(w_time.hour)
-                    print(f'UTC offset: {utc_offset}')
-                    w_time_of_day = 'day' if w_time.hour >= 7 and w_time.hour < 20 else 'night'
-                    print(f'Forecast at: {w_time}\n\ttemp: {w_temp}\n\tstatus: {w_status}\n\tcode: {w_code}')
-                    my_forecasts.append({
-                        'time': w_time,
-                        'temp': w_temp,
-                        'status': w_status,
-                        'code': w_code,
-                        'time_of_day': w_time_of_day
-                    })
-                    i += 1
-
         w = observation.get_weather()
 
         context = {
@@ -160,8 +95,6 @@ def update_weather_stats(request):
             'code': w.get_weather_code(),
             'time_of_day': time_of_day,
         }
-        if weather.show_forecast:
-            context['forecasts'] = my_forecasts
         return JsonResponse(context) 
 
 def get_location(lat, lon):

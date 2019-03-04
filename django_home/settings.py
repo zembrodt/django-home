@@ -33,6 +33,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'dashboard.apps.DashboardConfig',
     'dt.apps.DtConfig',
+    'forecast.apps.ForecastConfig',
     'photos.apps.PhotosConfig',
     'traffic.apps.TrafficConfig',
     'users.apps.UsersConfig',

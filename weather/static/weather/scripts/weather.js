@@ -47,7 +47,7 @@ class Weather {
         $.ajax(
         {
             type:"GET",
-            url: "/update_weather",
+            url: "/weather/update_weather/",
             dataType: "json",
             data:{
                 //csrfmiddlewaretoken: '{{ csrf_token }}',
@@ -108,7 +108,7 @@ class Weather {
     }
 }
 
-window.onload = function() {
+$(document).ready(function() {
     weathers = [];
     $('div').each(function() {
         if (this.id.match(/id-weather-\d+/)) {
@@ -128,7 +128,7 @@ window.onload = function() {
         console.log('Getting location of weather-' + weathers[i].get_id())
         weathers[i].getLocation();
     }
-}
+});
 /*
 function processForm(e) {
     if (e.preventDefault) e.preventDefault();
