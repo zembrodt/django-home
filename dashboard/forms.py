@@ -1,4 +1,5 @@
 from django import forms
+from django.forms.widgets import TextInput
 from .models import Module
 from dt.models import Datetime
 from photos.models import Photos
@@ -8,7 +9,10 @@ class ModuleCreateForm(forms.ModelForm):
 
     class Meta:
         model = Module
-        fields = ['module_type', 'x', 'y']
+        fields = ['module_type', 'x', 'y', 'z_index', 'text_color']
+        widgets = {
+            'text_color': TextInput(attrs={'type': 'color'}),
+        }
         # NOTE: this is an incorrect way to do widgets
         '''
         widgets = {

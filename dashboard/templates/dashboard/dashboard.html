@@ -1,15 +1,20 @@
 
 {% extends "dashboard/base.html" %}
+{% load static %}
 {% block styles %}
+    <link rel="stylesheet" href="{% static 'dashboard/css/django-home.css' %}">
     <style>
+        .module {
+            position: absolute;
+        }
     {% for module, values in modules.items %}
         {% with id=values.id|escapejs type=values.type|escapejs %}
         {#% include values.styles|escapejs with id=id %#}
-            #{{ type }}-{{ id }} {
-                position: absolute;
+            #id-{{ type }}-{{ id }} {
                 z-index: {{ values.z_index }};
                 top: {{ values.top }}px;
                 left: {{ values.left }}px;
+                color: {{ values.text_color }}
             }
         
         {% endwith %}
@@ -23,9 +28,9 @@
 
 {% block content %}
     {% block update-content %}{% endblock update-content %}
-    <h1>{{ user }}'s Dashboard</h1>
+    <!-- <h1>{{ user }}'s Dashboard</h1> -->
     {% for module, values in modules.items %}
-        <div id="{{ values.type|escapejs }}-{{ values.id|escapejs }}">
+        <div id="id-{{ values.type|escapejs }}-{{ values.id|escapejs }}" class="module">
             {#% include values.page|escapejs %#}
             {{ values.content }}
         </div>

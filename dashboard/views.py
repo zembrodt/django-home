@@ -1,4 +1,4 @@
-from django.shortcuts import redirect, render, get_object_or_404
+from django.shortcuts import redirect, reverse, render, get_object_or_404
 from django.http.response import JsonResponse
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import (
     ListView,
     CreateView,
+    DeleteView
 )
 from django.template.loader import get_template
 from django.templatetags.static import static
@@ -20,10 +21,8 @@ from .forms import (
     WeatherForm
 )
 from photos.forms import ImageForm, PhotosForm, ImageFormSet
-from photos.models import Image
+from photos.models import Image, Photos
 import json, re
-
-DEFAULT_Z_INDEX = 9
 
 def home(request):
     context = {
@@ -62,12 +61,13 @@ def save_update(request):
             print(f'data_json: {data_json}')
             
             data = json.loads(data_json)
-            t, pk = data['id'].split('-')
+            _, t, pk = data['id'].split('-')
             print(f't: {t}\npk: {pk}')
             
             module = Module.objects.filter(pk=pk, owner=user).first()
             module.x = int(re.sub('px', '', data['left']))
             module.y = int(re.sub('px', '', data['top']))
+            module.z_index = int(data['z-index'])
             print(f'updated module: {module}')
             module.save()
             
@@ -103,6 +103,7 @@ class ModuleListView(LoginRequiredMixin, ListView):#UserPassesTestMixin, ListVie
         return False
     '''
 
+'''
 class ModuleCreateView(LoginRequiredMixin, CreateView):
     model = Module
     fields = ['module_type', 'x', 'y']
@@ -112,6 +113,17 @@ class ModuleCreateView(LoginRequiredMixin, CreateView):
         user = Profile.objects.filter(user=self.request.user).first()
         form.instance.owner = user
         return super().form_valid(form)
+'''
+
+class ModuleDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Module
+
+    def test_func(self):
+        module = self.get_object()
+        return self.request.user.profile == module.owner
+    
+    def get_success_url(self):
+        return reverse('user-modules')
 
 def module_create(request):
     if request.is_ajax():
@@ -233,8 +245,8 @@ def generate_context(request):
     user = Profile.objects.filter(user=request.user).first()
     modules = {}
     unique_modules = []
-    z_index = DEFAULT_Z_INDEX # TODO: store this value in module settings?
     for module in Module.objects.filter(owner=user):
+        moveable = True
         t = module.module_type.module_type
         if t not in unique_modules:
             unique_modules.append(t)
@@ -244,6 +256,8 @@ def generate_context(request):
             page_render = dt_views.dt(request, module)
         elif t == 'photos':
             page_render = photos_views.photos(request, module)
+            if Photos.objects.filter(module=module).first().is_background:
+                moveable = False
         elif t == 'weather':
             page_render = weather_views.weather(request, module)
 
@@ -257,10 +271,11 @@ def generate_context(request):
             #'page': f'{t}/{t}.html',
             'top': module.y,
             'left': module.x,
-            'z_index': z_index,
+            'z_index': module.z_index,
+            'text_color': module.text_color,
+            'moveable': moveable,
             'content': page_render,
         }
-        z_index += 1
     return modules, unique_modules
 
 # Module-specific gets

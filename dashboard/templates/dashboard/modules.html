@@ -13,7 +13,8 @@
             y: {{ module.y }}
         </p>
         <p>
-            <a href="{% url 'update-module' module.id %}">Update</a>
+            <a href="{% url 'update-module' module.id %}">Update</a><br/>
+            <a href="{% url 'delete-module' module.id %}">Delete</a>
         </p>
     {% endfor %}
 {% endblock %}

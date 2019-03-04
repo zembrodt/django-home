@@ -1,20 +1,16 @@
 {% extends "dashboard/dashboard.html" %}
 
 {% block update-styles %}
-    {% for module, values in modules.items %}
-        {% with id=values.id|escapejs type=values.type|escapejs %}    
-        <style>
-            #{{ type }}-{{ id }} {
-                border: 1px solid #d3d3d3;
-                cursor: move;
-            }
-        </style>
-        {% endwith %}
-    {% endfor %}
+    <style>
+        .moveable {
+            border: 1px solid #d3d3d3;
+            cursor: move;
+        }
+    </style>
 {% endblock %}
 
 {% block update-content %}
-    <form id='update-dashboard'>
+    <form id='update-dashboard' style='z-index: 100; position: absolute'>
         <button id='update-button' type='submit' disabled>Save Dashboard</button>
     </form>
     <div id='update-response' style='color: green'></div>
@@ -25,152 +21,181 @@
 {% endblock %}
 
 {% block update-scripts %}
-    <script>
-        //TEST
-        $(window).resize(function() {
-            // This will execute whenever the window is resized
-            var h=$(window).height(); // New height
-            var w=$(window).width(); // New width
-            console.log(w + 'x' + h)
-        });
-        //
+<script>
+    jQuery(function() {
+    //TEST
+    $(window).resize(function() {
+        // This will execute whenever the window is resized
+        var h=$(window).height(); // New height
+        var w=$(window).width(); // New width
+        console.log(w + 'x' + h)
+    });
+    //
 
+    function disableButton() {
+        $('#update-button').attr('disabled', 'disabled');
+    }
 
-        modules = [];
+    function enableButton() {
+        $('#update-button').removeAttr('disabled');
+    }
 
-        {% for module, values in modules.items %}
-            {% with id=values.id|escapejs type=values.type|escapejs %}
-                //modules.push("{{ id }}");
-                $('.{{ type }}-{{ id }}').ready(function() {
-                    dragElement(document.getElementById('{{ type }}-{{ id }}'));
+    function isButtonDisabled() {
+        return $('#update-button').attr('disabled');
+    }
+
+    modules = [];
+    // TODO: Move this into only JQuery code
+
+    {% for module, values in modules.items %}
+        {% with id=values.id|escapejs type=values.type|escapejs %}
+            {% if values.moveable is True %}
+                $('#id-{{ type }}-{{ id }}')
+                    .addClass('moveable')
+                    .ready(function() {
+                        dragElement(document.getElementById('id-{{ type }}-{{ id }}'));
                 });
-            {% endwith %}
-        {% endfor %}
+            {% endif %}
+        {% endwith %}
+    {% endfor %}
 
-        //Make the DIV element draggable:
-        //for (module in modules) {
-        //   $('.'+module).ready(function() {
-        //        dragElement(document.getElementById(module))
-        //    });
-        //}
+    $('div').filter(function() {
+        return this.id.match(/id-.*/);
+    }).each(function() {
 
-        function disableButton() {
-            $('#update-button').attr('disabled', 'disabled');
+        var up_button = $('<input id="up" type="button" value="^">');
+        var down_button = $('<input id="down" type="button" value="v">');
+        var div = $(this);
+        $(this)
+            .append(up_button)
+            .append(down_button)
+            .find('#up').click(function() {
+                var z_index = parseInt(div.css('z-index'));
+                div.css('z-index', z_index+1);
+                enableButton();
+            });
+        $(this).find('#down').click(function() {
+                var z_index = parseInt(div.css('z-index'));
+                console.log('z-index: '+z_index);
+                div.css('z-index', z_index-1);
+                enableButton();
+            });
+    });
+
+    //Make the DIV element draggable:
+    //for (module in modules) {
+    //   $('.'+module).ready(function() {
+    //        dragElement(document.getElementById(module))
+    //    });
+    //}
+
+    function dragElement(elmnt) {
+        var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        elmnt.onmousedown = dragMouseDown;
+
+        function dragMouseDown(e) {
+            e = e || window.event;
+            e.preventDefault();
+            // get the mouse cursor position at startup:
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmouseup = closeDragElement;
+            // call a function whenever the cursor moves:
+            document.onmousemove = elementDrag;
         }
 
-        function enableButton() {
-            $('#update-button').removeAttr('disabled');
-        }
+        function elementDrag(e) {
+            e = e || window.event;
+            e.preventDefault();
+            // calculate the new cursor position:
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            // set the element's new position:
+            elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+            elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
 
-        function isButtonDisabled() {
-            return $('#update-button').attr('disabled');
-        }
-
-        function dragElement(elmnt) {
-            var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-            elmnt.onmousedown = dragMouseDown;
-
-            function dragMouseDown(e) {
-                e = e || window.event;
-                e.preventDefault();
-                // get the mouse cursor position at startup:
-                pos3 = e.clientX;
-                pos4 = e.clientY;
-                document.onmouseup = closeDragElement;
-                // call a function whenever the cursor moves:
-                document.onmousemove = elementDrag;
+            // Enable the update button if needed
+            if (isButtonDisabled()) {
+                enableButton();
             }
+        }
 
-            function elementDrag(e) {
-                e = e || window.event;
-                e.preventDefault();
-                // calculate the new cursor position:
-                pos1 = pos3 - e.clientX;
-                pos2 = pos4 - e.clientY;
-                pos3 = e.clientX;
-                pos4 = e.clientY;
-                // set the element's new position:
-                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+        function closeDragElement() {
+            /* stop moving when mouse button is released:*/
+            document.onmouseup = null;
+            document.onmousemove = null;
+        }
+    }   
+    
+    // TODO: figure out how to do this without hardcoding
+    const valid_ids = ['dt', 'photos', 'weather'];
+    function processUpdate(e) {
+        if (e.preventDefault) e.preventDefault();
 
-                // Enable the update button if needed
-                if (isButtonDisabled()) {
-                    enableButton();
+        var ids = [];
+        var ids_to_save = [];
+        $(document.body).find('div').each(function(){ ids.push(this.id) });
+        console.log(ids);
+        for (i in ids) {
+            for (valid_id in valid_ids) {
+                if (ids[i].includes(valid_ids[valid_id])) {
+                    ids_to_save.push(ids[i]);
                 }
             }
+        }
+        console.log(ids_to_save);
 
-            function closeDragElement() {
-                /* stop moving when mouse button is released:*/
-                document.onmouseup = null;
-                document.onmousemove = null;
-            }
-        }   
+        console.log('Saving the valid ids: [' + ids_to_save +']');
+
+        savePositions(ids_to_save);
+
+        // You must return false to prevent the default form behavior
+        return false;
+    }
+
+    var form = document.getElementById('update-dashboard');
+    if (form.attachEvent) {
+        form.attachEvent('submit', processUpdate);
+    } else {
+        form.addEventListener('submit', processUpdate);
+    }
+
+    function savePositions(ids) {
+        var id_data_temp = [];
         
-        // TODO: figure out how to do this without hardcoding
-        const valid_ids = ['dt', 'photos', 'weather'];
-        function processUpdate(e) {
-            if (e.preventDefault) e.preventDefault();
-
-            var ids = [];
-            var ids_to_save = [];
-            $(document.body).find('div').each(function(){ ids.push(this.id) });
-            console.log(ids);
-            for (i in ids) {
-                for (valid_id in valid_ids) {
-                    if (ids[i].includes(valid_ids[valid_id])) {
-                        ids_to_save.push(ids[i]);
-                    }
-                }
-            }
-            console.log(ids_to_save);
-
-            console.log('Saving the valid ids: [' + ids_to_save +']');
-
-            savePositions(ids_to_save);
-
-            // You must return false to prevent the default form behavior
-            return false;
+        for (i in ids) {
+            var id_div = $('#'+ids[i]);
+            id_data_temp.push(
+                JSON.stringify({
+                    'id': ids[i],
+                    'top': id_div.css('top'),
+                    'left': id_div.css('left'),
+                    'z-index': id_div.css('z-index')
+                })
+            );
         }
+        console.log('Sending the data:\n'+id_data_temp);
 
-        var form = document.getElementById('update-dashboard');
-        if (form.attachEvent) {
-            form.attachEvent('submit', processUpdate);
-        } else {
-            form.addEventListener('submit', processUpdate);
-        }
-
-        function savePositions(ids) {
-            var id_data_temp = [];
-            
-            for (i in ids) {
-                var id_div = $('#'+ids[i]);
-                id_data_temp.push(
-                    JSON.stringify({
-                        'id': ids[i],
-                        'top': id_div.css('top'),
-                        'left': id_div.css('left')
-                    })
-                );
-            }
-            console.log('Sending the data:\n'+id_data_temp);
-
-            $.ajax(
+        $.ajax(
+        {
+            type:"GET",
+            url: "{% url 'dashboard-update-save' %}",
+            dataType: "json",
+            data:{
+                    //csrfmiddlewaretoken: '{{ csrf_token }}',
+                    'id_data[]': id_data_temp
+            },
+            success: function(data) 
             {
-                type:"GET",
-                url: "{% url 'dashboard-update-save' %}",
-                dataType: "json",
-                data:{
-                        //csrfmiddlewaretoken: '{{ csrf_token }}',
-                        'id_data[]': id_data_temp
-                },
-                success: function(data) 
-                {
-                    // TODO: modify things here? Maybe fade out save button
-                    console.log('We saved the positions!');
-                    $('#update-response').html('Positions saved!');
-                    disableButton();
-                }
-            })
-        }
-    </script>
+                // TODO: modify things here? Maybe fade out save button
+                console.log('We saved the positions!');
+                $('#update-response').html('Positions saved!');
+                disableButton();
+            }
+        })
+    }
+    });
+</script>
 {% endblock %}

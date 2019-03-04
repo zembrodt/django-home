@@ -13,8 +13,10 @@ class ModuleType(models.Model):
 class Module(models.Model):
     owner = models.ForeignKey(Profile, related_name='modules', on_delete=models.CASCADE)
     module_type = models.ForeignKey(ModuleType, on_delete=models.CASCADE)
-    x = models.IntegerField()
-    y = models.IntegerField()
+    x = models.IntegerField(default=0)
+    y = models.IntegerField(default=0)
+    z_index = models.SmallIntegerField(default=1)
+    text_color = models.CharField(max_length=7, default='#ffffff')
 
     def __str__(self):
         return f'Module of {self.module_type} at ({self.x}, {self.y})'

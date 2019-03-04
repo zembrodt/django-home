@@ -2,7 +2,8 @@ from django.urls import path
 from . import views
 from .views import (
     ModuleListView,
-    ModuleCreateView,
+    #ModuleCreateView,
+    ModuleDeleteView
 )
 
 # NOTE: using weather's 'views'
@@ -14,5 +15,6 @@ urlpatterns = [
     path('modules/', ModuleListView.as_view(), name='user-modules'),
     #path('modules/add/', ModuleCreateView.as_view(), name='add-module')
     path('modules/add/', views.module_create, name='add-module'),
-    path('modules/<int:pk>/update/', views.module_update, name='update-module')
+    path('modules/<int:pk>/update/', views.module_update, name='update-module'),
+    path('modules/<int:pk>/delete/', ModuleDeleteView.as_view(), name='delete-module')
 ]
