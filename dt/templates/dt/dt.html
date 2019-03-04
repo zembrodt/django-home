@@ -1,4 +1,16 @@
-<h2>Time:</h2>
-<p>
-    <span id="hour-{{ id }}">00</span>:<span id="minute-{{ id }}">00</span>:<span id="second-{{ id }}">00</span>&nbsp;<span id="am-pm-{{ id }}"></span>
-</p>
+<div class="container text-nowrap">
+    <input id="twenty_four_hours-{{ id }}" type="hidden" value="{{ twenty_four_hours }}">
+    <div class="row">
+        <div class="col time">
+            <span id="hour-{{ id }}">00</span>:<span id="minute-{{ id }}">00</span>:<span id="second-{{ id }}">00</span>&nbsp;<span id="am-pm-{{ id }}"></span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col date align-items-center">
+            <span id="date-{{ id }}">---</span>
+        </div>
+        <div class="col timezone align-items-center">
+            <span id="timezone-{{ id }}">---</span>
+        </div>
+    </div>
+</div>

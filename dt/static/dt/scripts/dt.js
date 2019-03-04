@@ -10,13 +10,23 @@ Number.prototype.pad = function(size) {
 const seconds_inc = 1000;
 const minutes_inc = seconds_inc * 60;
 const hours_inc = minutes_inc * 60;
+const month_names = [
+    "January", "February", "March",
+    "April", "May", "June",
+    "July", "August", "September",
+    "October", "November", "December"
+];
 
 class Datetime {
     constructor(id) { // other things?
         this.id = id;
+        this.twenty_four_hours = parseInt($('#twenty_four_hours-' + id).val());
     }
     get_id() {
         return this.id;
+    }
+    is_twenty_four_hours() {
+        return this.twenty_four_hours === 1;
     }
 }
 
@@ -30,7 +40,26 @@ function set_minutes(datetime) {
     $('#minute-' + datetime.get_id()).html((new Date().getMinutes()).pad(2));
 }
 function set_hours(datetime) {
-    $('#hour-' + datetime.get_id()).html((new Date().getHours()).pad(2));
+    var date = new Date();
+    var hour = date.getHours();
+    if (!datetime.is_twenty_four_hours()) {
+        var am_pm = 'AM';
+        if (hour === 0) {
+            hour = 12;
+        }
+        else if (hour === 12) {
+            am_pm = 'PM';
+        }
+        else if (hour > 12) {
+            hour -= 12;
+            am_pm = 'PM';
+        }
+        $('#am-pm-' + datetime.get_id()).html(am_pm);
+    }
+    $('#hour-' + datetime.get_id()).html(hour.pad(2));
+    $('#date-' + datetime.get_id()).html(month_names[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear());
+    //temp
+    $('#timezone-' + datetime.get_id()).html('EST');
 }
 
 // Starts the timers for each value
@@ -67,8 +96,8 @@ function init_clock(datetime) {
 // Main code
 datetimes = []
 $('div').each(function() {
-    if (this.id.match(/dt-\d+/)) {
-        datetimes.push(new Datetime(this.id.split('-')[1]));
+    if (this.id.match(/id-dt-\d+/)) {
+        datetimes.push(new Datetime(this.id.split('-')[2]));
     }
 });
 

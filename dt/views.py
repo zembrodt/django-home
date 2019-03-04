@@ -6,8 +6,10 @@ from dashboard.forms import DateForm
 # NOTE: placeholder
 def dt(request, module):
     template = get_template('dt/dt.html')
+    datetime = Datetime.objects.filter(module=module).first()
     context = {
-        'id': module.id
+        'id': module.id,
+        'twenty_four_hours': 1 if datetime.twenty_four_hours is True else 0
     }
     return template.render(context)
 
