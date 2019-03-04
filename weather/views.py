@@ -156,7 +156,7 @@ def update_weather_stats(request):
             'humidity': w.get_humidity(),
             'temperature': w.get_temperature('fahrenheit'),
             'status': w.get_status(),
-            'details': w.get_detailed_status(),
+            'details': w.get_detailed_status().capitalize(),
             'code': w.get_weather_code(),
             'time_of_day': time_of_day,
         }

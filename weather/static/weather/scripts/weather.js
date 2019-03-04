@@ -111,16 +111,17 @@ class Weather {
 window.onload = function() {
     weathers = [];
     $('div').each(function() {
-        if (this.id.match(/weather-\d+/)) {
-            weather = new Weather(this.id.split('-')[1])
+        if (this.id.match(/id-weather-\d+/)) {
+            weather = new Weather(this.id.split('-')[2])
             weathers.push(weather);
-            // A
-            var form = document.getElementById('latlon-form-' + weather.get_id());
+            /*
+            var form = document.getElementById('#latlon-form-' + weather.get_id());
             if (form.attachEvent) {
                 form.attachEvent("submit", weather.processForm.bind(weather) );
             } else {
                 form.addEventListener("submit", weather.processForm.bind(weather));
             }
+            */
         }
     });
     for (var i in weathers) {

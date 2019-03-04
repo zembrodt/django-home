@@ -1,24 +1,61 @@
 {% load static %}
 
-<h2>Current Weather:</h2>
-<p>
-    City: <span id="city-{{ id }}">{{ city }}</span>, <span id="country-{{ id }}">{{ country }}</span><br/>
-    Coords: (<span id="lat-{{ id }}">{{ latitude }}</span>, <span id="lon-{{ id }}">{{ longitude }}</span>)<br/>
-    Wind speed: <span id="wind_speed-{{ id }}">{{ wind.speed }}</span><br/>
-    Wind degree: <span id="wind_deg-{{ id }}">{{ wind.deg }}</span>&nbsp;<i id="wind_deg-icon-{{ id }}"></i><br/>
-    Humidity: <span id="humidity-{{ id }}">{{ humidity }}</span>%<br/>
-    Temperature: <span id="temp-{{ id }}">{{ temperature.temp }}</span> F (<span id="temp_min-{{ id }}">{{ temperature.temp_min }}</span> - <span id="temp_max-{{ id }}">{{ temperature.temp_max }}</span>)<br/>
+<div class="container text-nowrap">
+    <div class="row">
+        <div class="col city">
+            <span id="city-{{ id }}">{{ city }}</span>, <span id="country-{{ id }}">{{ country }}</span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col weather-icon">
+            <i id="weather-icon-{{ id }}" class="wi wi-na"></i>
+        </div>
+        <div class="col">
+            <div class="row">
+                <div class="col temp">
+                    <span id="temp-{{ id }}">{{ temperature.temp }}</span>&#176; F
+                </div>
+            </div>
+            <div class="row">
+                <div class="col temp-range">
+                    (<span id="temp_min-{{ id }}">{{ temperature.temp_min }}</span>&#176; F - <span id="temp_max-{{ id }}">{{ temperature.temp_max }}</span>&#176; F)
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="text-align: center">
+        <div style="display: inline-block; text-align: left">
+        <div class="row">
+            <div class="col status">
+                <span id="details-{{ id }}">{{ details }}</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col humidity">
+                <span id="humidity-{{ id }}">{{ humidity }}</span>% humidity
+            </div>
+        </div>
+        <div class="row">
+            <div class="col wind">
+                Wind:&nbsp;<span id="wind_speed-{{ id }}">{{ wind.speed }}</span>mph&nbsp;<i id="wind_deg-icon-{{ id }}"></i>
+            </div>
+        </div>
+        </div>
+    </div>
+    <!--
+    Coords: (<span id="lat-{{ id }}">{{ latitude }}</span>, <span id="lon-{{ id }}">{{ longitude }}</span>)
+    Wind degree: <span id="wind_deg-{{ id }}">{{ wind.deg }}</span>
     Weather status: <span id="status-{{ id }}">{{ status }}</span><br/>
-    Detailed status: <span id="details-{{ id }}">{{ details }}</span><br/>
-    Weather code: <span id="code-{{ id }}">--</span><br/>
-    Icon: <i id="weather-icon-{{ id }}" class="wi wi-na"></i>
-</p>
+    -->
+</div>
 
+<!--
 <form id="latlon-form-{{ id }}">
     <input type="text" id="lat-in-{{ id }}" name="lat-in" /><br />
     <input type="text" id="lon-in-{{ id }}" name="lon-in" /><br />
     <button type="submit">Update</button>
 </form>
+-->
 
 {% if forecast %}
     <h2>Forecast:</h2>
