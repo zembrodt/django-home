@@ -4,7 +4,7 @@ from .models import Image, Photos
 class PhotosForm(forms.ModelForm):
     class Meta:
         model = Photos
-        fields = ['is_background', 'width', 'height']
+        fields = ['is_background', 'width', 'height', 'interval']
 
 
 class ImageForm(forms.ModelForm):

@@ -1,3 +1,7 @@
-<div style="z-index: -1 !important">
-    <img id="photo-{{ photo.pk }}" width="{{ photo.width }}" height="{{ photo.height }}" src="{{ photo.image.url }}" />
-</div>
+<img id="photo-{{ photo.pk }}" width="{{ photo.width }}" height="{{ photo.height }}" src="#" />
+<input type="hidden" id="img-count" value="{{ count }}">
+<input type="hidden" id="img-interval" value="{{ photo.interval }}">
+<input type="hidden" id="img-background" value="{{ is_background }}">
+{% for image in images %}
+    <input type="hidden" id="img-{{ forloop.counter0 }}" value="{{ image.image.url }}">
+{% endfor %}

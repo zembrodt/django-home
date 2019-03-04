@@ -7,6 +7,7 @@ class Photos(models.Model):
     is_background = models.BooleanField(default=False)
     width = models.IntegerField(blank=True, null=True)
     height = models.IntegerField(blank=True, null=True)
+    interval = models.IntegerField(default=5)
     
 
     # NOTE: this will need to be modified in the future to allow multiple photos per photos module
@@ -16,8 +17,9 @@ class Photos(models.Model):
         return f'Photos module: {self.module}'
 
 def get_image_filename(instance, filename):
-    slug = slugify(filename)
-    return f'post_images/{slug}-{filename}'
+    #slug = slugify(filename)
+    #return f'background_pics/{slug}-{filename}'
+    return f'background_pics/{filename}'
 
 class Image(models.Model):
     photos_module = models.ForeignKey(Photos, related_name='images', on_delete=models.CASCADE)
