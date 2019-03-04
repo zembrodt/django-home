@@ -1,12 +1,13 @@
 from django.db import models
 from dashboard.models import Module
 
-class Weather(models.Model):
-    module = models.ForeignKey(Module, related_name='weathers', on_delete=models.CASCADE)
+class Forecast(models.Model):
+    module = models.ForeignKey(Module, related_name='forecasts', on_delete=models.CASCADE)
+    forecast_length = models.IntegerField(default=4)
     current_location = models.BooleanField(default=True)
     country = models.CharField(max_length=100, null=True)
     state = models.CharField(max_length=100, null=True)
     city = models.CharField(max_length=100, null=True)
 
     def __str__(self):
-        return f'Weather module: {self.module}'
+        return f'Forecast module of length {self.forecast_length} ({self.module})'
