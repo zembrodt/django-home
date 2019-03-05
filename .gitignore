@@ -1,6 +1,6 @@
 # Project specific
 media/
-*/migrations/*
+#*/migrations/*
 
 # Visual Studio Code
 .vscode/
