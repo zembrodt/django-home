@@ -1,4 +1,5 @@
 from django.shortcuts import redirect, render
+from django.conf import settings
 from django.http.response import JsonResponse
 from django.template.loader import get_template
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -6,7 +7,9 @@ from django.views.generic import (
     UpdateView,
 )
 from pyowm.exceptions.api_call_error import APICallTimeoutError
+from pyowm.exceptions.api_response_error import NotFoundError
 from urllib.request import urlopen
+from urllib.parse import quote
 from datetime import datetime, timedelta
 from dashboard.models import Module
 from dashboard.forms import (
@@ -15,11 +18,7 @@ from dashboard.forms import (
 from .models import Weather
 import json, math, pyowm, os
 
-MAPQUEST_KEY = os.environ.get('MAPQUEST_KEY')
-OWM_KEY = os.environ.get('OWM_KEY')
-GEONAMES_USERNAME = os.environ.get('GEONAMES_USER')
-
-owm = pyowm.OWM(OWM_KEY)
+owm = pyowm.OWM(settings.OWM_KEY)
 
 # NOTE: placeholder
 def weather(request, module):
@@ -79,7 +78,13 @@ def update_weather_stats(request):
             # TODO: speed this up?
             #observation = min(observations, \
             #    key=lambda x: get_distance(curr_coords, (x.get_location().get_lat(), x.get_location().get_lon())))
-            observation = owm.weather_at_place(f'{city},{country}')
+            print(f'city: {city}')
+            print(f'country: {country}')
+            try:
+                observation = owm.weather_at_place(f'{city},{country}')
+            except NotFoundError:
+                city, country = get_location_by_city(city, country)
+                observation = owm.weather_at_place(f'{city},{country}')
             city_id = observation.get_location().get_ID()
 
         w = observation.get_weather()
@@ -99,15 +104,18 @@ def update_weather_stats(request):
         }
         return JsonResponse(context) 
 
+MAPQUEST_CITY_ID = 'adminArea5'
+MAPQUEST_COUNTRY_ID = 'adminArea1'
+
 def get_location(lat, lon):
-    url = f'http://www.mapquestapi.com/geocoding/v1/reverse?key={MAPQUEST_KEY}' + \
+    url = f'http://www.mapquestapi.com/geocoding/v1/reverse?key={settings.MAPQUEST_KEY}' + \
         f'&location={lat},{lon}&includeRoadMetadata=true&includeNearestIntersection=true'
 
     response = urlopen(url).read()
     j = json.loads(response)
     components = j['results'][0]['locations'][0]
-    city = components['adminArea5']
-    country = components['adminArea1']
+    city = components[MAPQUEST_CITY_ID]
+    country = components[MAPQUEST_COUNTRY_ID]
     """
     for c in components:
         if "country" in c['types']:
@@ -117,8 +125,21 @@ def get_location(lat, lon):
     """
     return city, country
 
+def get_location_by_city(city, country):
+    location_query = quote(f'{city},{country}')
+    url = f'http://open.mapquestapi.com/geocoding/v1/address?key={settings.MAPQUEST_KEY}&location={location_query}'
+    print(f'url: {url}')
+
+    response = urlopen(url).read()
+    j = json.loads(response)
+    components = j['results'][0]['locations'][0]
+    city = components[MAPQUEST_CITY_ID]
+    country = components[MAPQUEST_COUNTRY_ID]
+
+    return city, country
+
 def get_timezone(lat, lon):
-    #url = f'http://api.geonames.org/timezoneJSON?lat={lat}&lng={lon}&username={GEONAMES_USERNAME}'
+    #url = f'http://api.geonames.org/timezoneJSON?lat={lat}&lng={lon}&username={settings.GEONAMES_USERNAME}'
 
     #response = urlopen(url).read()
     #j = json.loads(response)
