@@ -1,4 +1,5 @@
 from django.shortcuts import redirect, render
+from django.conf import settings
 from django.http.response import JsonResponse
 from django.template.loader import get_template
 from pyowm.exceptions.api_call_error import APICallTimeoutError
@@ -11,13 +12,10 @@ from weather.views import (
     get_location,
     get_timezone,
     get_distance,
-    MAPQUEST_KEY,
-    OWM_KEY,
-    GEONAMES_USERNAME,
 )
 import json, math, pyowm
 
-owm = pyowm.OWM(OWM_KEY)
+owm = pyowm.OWM(settings.OWM_KEY)
 
 # NOTE: placeholder
 def forecast(request, module):
