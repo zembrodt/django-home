@@ -61,17 +61,13 @@ def save_update(request):
         user = Profile.objects.filter(user=request.user).first()
 
         for data_json in id_data:
-            print(f'data_json: {data_json}')
-            
             data = json.loads(data_json)
             _, t, pk = data['id'].split('-')
-            print(f't: {t}\npk: {pk}')
             
             module = Module.objects.filter(pk=pk, owner=user).first()
             module.x = int(re.sub('px', '', data['left']))
             module.y = int(re.sub('px', '', data['top']))
             module.z_index = int(data['z-index'])
-            print(f'updated module: {module}')
             module.save()
             
             #module.update(x=int(re.sub('px', '', data['top'])), y=int(re.sub('px', '', data['left'])))
@@ -217,15 +213,11 @@ def module_create(request):
                     photos.save()
                     print(f'We have Photos module! {photos}')
                     for form in formset.cleaned_data:
-                        print('We are in the formset!')
-                        print(f'form: {form}')
                         #this helps to not crash if the user   
                         #do not upload all the photos
                         if form:
                             image_form = form['image']
-                            print(f'image_form: {image_form}')
                             image = Image(photos_module=photos, image=image_form)
-                            print(f'image: {image}')
                             image.save()
             elif str(module_type) == 'Weather':
                 weather_form = WeatherForm(request.POST)#, module=module)#, instance=module)
@@ -285,8 +277,6 @@ def generate_context(request):
                 moveable = False
         elif t == 'weather':
             page_render = weather_views.weather(request, module)
-
-        print(f'page_render: {page_render}')
 
         modules[module.id] = {
             'id': module.id,

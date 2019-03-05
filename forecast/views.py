@@ -78,29 +78,17 @@ def update_forecast_stats(request):
             hour_forecast = owm.three_hours_forecast_at_id(city_id)
             start_time = hour_forecast.when_starts(timeformat='date')
             end_time = hour_forecast.when_ends(timeformat='date')
-            print(f'hour forecast start: {start_time}\nhour forecast end: {end_time}')
             forecasts = hour_forecast.get_forecast()
-            print(f'num of forecasts: {forecasts.count_weathers()}')
             my_forecasts = []
             cap_forecast = True if forecast.length >= 0 else False
-            time_start = None
-            time_end = None
-            weathers = forecasts.get_weathers()
-            for i, w in enumerate(weathers):
+            for i, w in enumerate(forecasts.get_weathers()):
                 if i >= forecast.length and cap_forecast:
                     break
                 w_time = w.get_reference_time(timeformat='date') + timedelta(hours=utc_offset)
-                if i == 0:
-                    time_start = w_time
-                elif (i+1 >= forecast.length and cap_forecast) or i+1 >= len(weathers):
-                    time_end = w_time
                 w_temp = w.get_temperature(unit='fahrenheit')
                 w_status = w.get_status()
                 w_code = w.get_weather_code()
-                print(w_time.hour)
-                print(f'UTC offset: {utc_offset}')
                 w_time_of_day = 'day' if w_time.hour >= 7 and w_time.hour < 20 else 'night'
-                print(f'Forecast at: {w_time}\n\ttemp: {w_temp}\n\tstatus: {w_status}\n\tcode: {w_code}')
                 my_forecasts.append({
                     'time': w_time,
                     'temp': w_temp,
@@ -108,8 +96,8 @@ def update_forecast_stats(request):
                     'code': w_code,
                     'time_of_day': w_time_of_day
                 })
-        print(f'time start: {time_start}')
-        print(f'time end: {time_end}')
+        print(f'time start: {start_time}')
+        print(f'time end: {end_time}')
         print(f'city: {city}')
         print(f'country: {country}')
 
@@ -118,8 +106,8 @@ def update_forecast_stats(request):
             'longitude': longitude,
             'city': city,
             'country': country,
-            'time_start': time_start,
-            'time_end': time_end,
+            'time_start': start_time,
+            'time_end': end_time,
             'forecasts': my_forecasts
         }
         return JsonResponse(context)

@@ -5,15 +5,11 @@ from .models import Photos, Image
 from dashboard.forms import PhotosForm
 
 def photos(request, module):
-    print(f'photos, module: {module}')
     template = get_template('photos/photos.html')
     photo = Photos.objects.filter(module=module).first()
     # temp
     images = Image.objects.filter(photos_module=photo)
-    print(f'images: {images}')
     image = Image.objects.filter(photos_module=photo).first()
-    print(f'photos, photo: {photo}')
-    print(f'image: {image}')
     
     context = {
         'photo': photo,

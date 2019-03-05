@@ -53,10 +53,10 @@ def update_weather_stats(request):
 
             time_of_day = 'day' if now.hour >= 7 and now.hour < 20 else 'night'
 
-            print(f'current time: {now}')
-            print(f'current utc time: {utc_now}')
-            print(f'utc offset: {utc_offset}')
-            #observation = owm.weather_at_coords(latitude, longitude)
+            #print(f'current time: {now}')
+            #print(f'current utc time: {utc_now}')
+            #print(f'utc offset: {utc_offset}')
+            
 
             # TODO: get list of cities OWM has for calculated city,country
             # Find the coords of each city and choose the one with the closest distance
@@ -128,7 +128,6 @@ def get_location(lat, lon):
 def get_location_by_city(city, country):
     location_query = quote(f'{city},{country}')
     url = f'http://open.mapquestapi.com/geocoding/v1/address?key={settings.MAPQUEST_KEY}&location={location_query}'
-    print(f'url: {url}')
 
     response = urlopen(url).read()
     j = json.loads(response)
@@ -138,6 +137,7 @@ def get_location_by_city(city, country):
 
     return city, country
 
+# TODO finish/fix
 def get_timezone(lat, lon):
     #url = f'http://api.geonames.org/timezoneJSON?lat={lat}&lng={lon}&username={settings.GEONAMES_USERNAME}'
 
