@@ -32,12 +32,12 @@ ALLOWED_HOSTS = [ 'djangohome.herokuapp.com' ]
 
 INSTALLED_APPS = [
     'users.apps.UsersConfig',
+    'dashboard.apps.DashboardConfig',
     'weather.apps.WeatherConfig',
     'forecast.apps.ForecastConfig',
     'dt.apps.DtConfig',
     'photos.apps.PhotosConfig',
     'traffic.apps.TrafficConfig',
-    'dashboard.apps.DashboardConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
