@@ -171,7 +171,7 @@ def module_create(request):
                 form_render = None
             context = {
                 'extended_form': form_render,
-                'extended_script': static(form_script)
+                'extended_script': static(form_script) if form_script else ''
             }
             return JsonResponse(context)
     if request.method == 'POST':

@@ -132,6 +132,6 @@ def update_forecast(request, module):
         return redirect('user-modules')
     context = {
         'module_form': form,
-        'module_type': 'Forecast'
+        'module_type': 'forecast'
     }
     return render(request, 'dashboard/update_form.html', context)

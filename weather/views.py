@@ -164,6 +164,6 @@ def update_weather(request, module):
         return redirect('user-modules')
     context = {
         'module_form': form,
-        'module_type': 'Weather'
+        'module_type': 'weather'
     }
     return render(request, 'dashboard/update_form.html', context)

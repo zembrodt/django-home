@@ -21,6 +21,6 @@ def update_dt(request, module):
         return redirect('user-modules')
     context = {
         'module_form': form,
-        'module_type': 'Datetime'
+        'module_type': 'dt'
     }
     return render(request, 'dashboard/update_form.html', context)

@@ -31,6 +31,6 @@ def update_photos(request, module):
         return redirect('user-modules')
     context = {
         'module_form': form,
-        'module_type': 'Photos'
+        'module_type': 'photos'
     }
     return render(request, 'dashboard/update_form.html', context)
