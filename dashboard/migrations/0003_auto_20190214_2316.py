@@ -7,6 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
+        ('users', '__first__'),
         ('dashboard', '0002_module_owner'),
     ]
 
