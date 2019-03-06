@@ -4,6 +4,7 @@ from .models import Module
 from dt.models import Datetime
 from photos.models import Photos
 from weather.models import Weather
+from weather.forms import UNIT_CHOICES
 
 class ModuleCreateForm(forms.ModelForm):
 
@@ -51,9 +52,10 @@ class WeatherForm(forms.ModelForm):
         else:
             super(WeatherForm, self).__init__(*args, **kwargs)
     '''
+    unit = forms.ChoiceField(choices=UNIT_CHOICES)
     class Meta:
         model = Weather
-        fields = ['city', 'country']
+        fields = ['city', 'country', 'unit']
         '''
         widgets = {
             'show_forecast': forms.CheckboxInput(attrs={

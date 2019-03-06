@@ -16,9 +16,13 @@ from dashboard.forms import (
     WeatherForm
 )
 from .models import Weather
-import json, math, pyowm, os
+from .forms import UNIT_DISPLAY
+import json, math, pyowm, pytz as tz, os
+from timezonefinderL import TimezoneFinder
+from datetime import datetime as dt
 
 owm = pyowm.OWM(settings.OWM_KEY)
+tz_finder = TimezoneFinder()
 
 # NOTE: placeholder
 def weather(request, module):
@@ -34,6 +38,9 @@ def update_weather_stats(request):
         module_id = request.GET.get('id')
         latitude = request.GET.get('lat')
         longitude = request.GET.get('lon')
+
+        module = Module.objects.get(pk=module_id)
+        weather = Weather.objects.get(module=module)
 
         print(f'latitude: {latitude}\nlongitude: {longitude}')
 
@@ -89,6 +96,9 @@ def update_weather_stats(request):
 
         w = observation.get_weather()
 
+        print(f'Weather unit: {weather.unit}')
+        print(f'Display unit {UNIT_DISPLAY[weather.unit]}')
+
         context = {
             'latitude': latitude,
             'longitude': longitude,
@@ -96,7 +106,8 @@ def update_weather_stats(request):
             'country': country,
             'wind': w.get_wind(),
             'humidity': w.get_humidity(),
-            'temperature': w.get_temperature('fahrenheit'),
+            'temperature': w.get_temperature(weather.unit),
+            'unit': UNIT_DISPLAY[weather.unit],
             'status': w.get_status(),
             'details': w.get_detailed_status().capitalize(),
             'code': w.get_weather_code(),
@@ -139,13 +150,18 @@ def get_location_by_city(city, country):
 
 # TODO finish/fix
 def get_timezone(lat, lon):
+    lat = float(lat)
+    lon = float(lon)
     #url = f'http://api.geonames.org/timezoneJSON?lat={lat}&lng={lon}&username={settings.GEONAMES_USERNAME}'
 
     #response = urlopen(url).read()
     #j = json.loads(response)
-    utc_offset = -5#j['rawOffset']
+    #utc_offset = j['rawOffset']
 
-    return utc_offset
+    curr_tz = tz.timezone(tz_finder.timezone_at(lng=lon, lat=lat))
+    now = dt.now(curr_tz)
+    return -5
+    #return now.strftime('%z'), now.tzname()
 
 # Only accurate for relatively short distances
 def get_distance(coords1, coords2):

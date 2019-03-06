@@ -70,6 +70,12 @@ class Weather {
                 $('#temp-' + this.id).html(data.temperature.temp);
                 $('#temp_min-' + this.id).html(data.temperature.temp_min);
                 $('#temp_max-' + this.id).html(data.temperature.temp_max);
+                var re = new RegExp('temp-unit-' + this.id + '.*');
+                $('span').each(function() {
+                    if (this.id.match(re)) {
+                        $(this).html(data.unit);
+                    }
+                });
                 $('#status-' + this.id).html(data.status);
                 $('#details-' + this.id).html(data.details);
                 $('#code-' + this.id).html(data.code);

@@ -13,12 +13,21 @@
         <div class="col">
             <div class="row">
                 <div class="col temp">
-                    <span id="temp-{{ id }}">{{ temperature.temp }}</span>&#176; F
+                    <span id="temp-{{ id }}">{{ temperature.temp }}</span>&#176; <span id="temp-unit-{{ id }}">{{ unit }}</span>
                 </div>
             </div>
             <div class="row">
                 <div class="col temp-range">
-                    (<span id="temp_min-{{ id }}">{{ temperature.temp_min }}</span>&#176; F - <span id="temp_max-{{ id }}">{{ temperature.temp_max }}</span>&#176; F)
+                    <div class="row">
+                        <div class="col">
+                            <span id="temp_max-{{ id }}">{{ temperature.temp_max }}</span>&#176; <span id="temp-unit-{{ id }}-max">{{ unit }}</span> high
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <span id="temp_min-{{ id }}">{{ temperature.temp_min }}</span>&#176; <span id="temp-unit-{{ id }}-min">{{ unit }}</span> low
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
