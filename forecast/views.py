@@ -13,16 +13,18 @@ from weather.views import (
     get_timezone,
     get_distance,
 )
-import json, math, pyowm
+from weather.forms import UNIT_DISPLAY
+import json, math, pyowm, time
 
 owm = pyowm.OWM(settings.OWM_KEY)
 
 # NOTE: placeholder
 def forecast(request, module):
-    #forecast = Forecast.objects.get(module=module)
+    forecast = Forecast.objects.get(module=module)
     template = get_template('forecast/forecast.html')
     context = {
-        'id': module.id
+        'id': module.id,
+        'forecast_length': range(forecast.length),
     }
     return template.render(context)
 
@@ -49,7 +51,7 @@ def update_forecast_stats(request):
             city, country = get_location(latitude, longitude)
             utc_offset = get_timezone(latitude, longitude)
             
-            now = utc_now + timedelta(hours=utc_offset)
+            #now = utc_now + timedelta(hours=utc_offset)
 
             # TODO: get list of cities OWM has for calculated city,country
             # Find the coords of each city and choose the one with the closest distance
@@ -76,8 +78,6 @@ def update_forecast_stats(request):
 
             # Calculate forecasts
             hour_forecast = owm.three_hours_forecast_at_id(city_id)
-            start_time = hour_forecast.when_starts(timeformat='date')
-            end_time = hour_forecast.when_ends(timeformat='date')
             forecasts = hour_forecast.get_forecast()
             my_forecasts = []
             cap_forecast = True if forecast.length >= 0 else False
@@ -85,17 +85,19 @@ def update_forecast_stats(request):
                 if i >= forecast.length and cap_forecast:
                     break
                 w_time = w.get_reference_time(timeformat='date') + timedelta(hours=utc_offset)
-                w_temp = w.get_temperature(unit='fahrenheit')
+                w_temp = w.get_temperature(unit=forecast.unit)
                 w_status = w.get_status()
                 w_code = w.get_weather_code()
                 w_time_of_day = 'day' if w_time.hour >= 7 and w_time.hour < 20 else 'night'
                 my_forecasts.append({
-                    'time': w_time,
+                    'time': int(time.mktime(w_time.timetuple())) * 1000,
                     'temp': w_temp,
                     'status': w_status,
                     'code': w_code,
                     'time_of_day': w_time_of_day
                 })
+        start_time = my_forecasts[0]['time']
+        end_time = my_forecasts[-1]['time']
         print(f'time start: {start_time}')
         print(f'time end: {end_time}')
         print(f'city: {city}')
@@ -106,8 +108,9 @@ def update_forecast_stats(request):
             'longitude': longitude,
             'city': city,
             'country': country,
-            'time_start': start_time,
-            'time_end': end_time,
+            'unit': UNIT_DISPLAY[forecast.unit],
+            #'time_start': start_time,
+            #'time_end': end_time,
             'forecasts': my_forecasts
         }
         return JsonResponse(context)

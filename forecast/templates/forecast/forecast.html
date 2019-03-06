@@ -3,12 +3,52 @@
 <div class="container text-nowrap">
     <div class="row">
         <div class="col city-forecast">
-            <span id="city-{{ id }}">{{ city }}</span>, <span id="country-{{ id }}">{{ country }}</span>
+            <span id="city-{{ id }}">{{ city }}</span>, <span id="country-{{ id }}">{{ country }}</span> upcoming forecast
         </div>
+        <!--         
         <div class="col time-range">
             (<span id="time-start-{{ id }}">{{ time_start }}</span> to <span id="time-end-{{ id }}">{{ time_end }}</span>)
         </div>
+         -->
     </div>
     <div id="forecasts-{{ id }}" class="row">
+    {% for i in forecast_length %}
+        <div id="forecasts-{{ id }}-{{ i }}">
+            <div class="col"> 
+                <div class="row"> 
+                    <div class="col"> 
+                        <div class="row"> 
+                            <div class="col time-forecast">
+                                <span id='forecasts-{{ id }}-time-{{ i }}'></span>
+                            </div>
+                        </div> 
+                        <div class="row"> 
+                            <div class="col date-forecast">
+                                <span id='forecasts-{{ id }}-date-{{ i }}'></span>
+                            </div> 
+                            <div class="col timezone-forecast"> 
+                                <span id='forecasts-{{ id }}-timezone-{{ i }}'></span>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+                <div class="row"> 
+                    <div class="col"> 
+                        <div class="row"> 
+                            <div class="col weather-icon-forecast">
+                                <span id='forecasts-{{ id }}-weather-icon-{{ i }}'></span>
+                            </div>
+                        </div> 
+                        <div class="row"> 
+                            <div class="col temp-forecast">
+                                <span id='forecasts-{{ id }}-temp-{{ i }}'></span>&#176;
+                                <span id='forecasts-{{ id }}-temp-unit-{{ i }}'></span>
+                            </div>
+                        </div>
+                    </div> 
+                </div>
+            </div>
+        </div>
+    {% endfor %}
     </div>
 </div>

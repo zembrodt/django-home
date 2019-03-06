@@ -51,33 +51,35 @@ class Forecast {
                 */
                 $('#city-' + this.id).html(data.city);
                 $('#country-' + this.id).html(data.country);
-                $('#time-start-' + this.id).html(data.time_start);
-                $('#time-end-' + this.id).html(data.time_end);
+                //$('#time-start-' + this.id).html(data.time_start);
+                //$('#time-end-' + this.id).html(data.time_end);
+
+                function span_id(div_id, type, idx) {
+                    return '#forecasts-' + div_id + '-' + type + '-' + idx;
+                }
 
                 // Create forecasts
-                var forecasts = [];
                 for (i in data.forecasts) {
-                    var w = data.forecasts[i]
-                    forecasts.push(
-                        '<div class="col">' +
-                        '<div class="row">' +
-                        '<div class="col time-forecast">' + w.time + 
-                        '</div></div>' +
-                        '<div class="row">' +
-                        '<div class="col">' +
-                        '<div class="row">' +
-                        '<div class="col weather-icon-forecast">' +
-                        '<i class="wi wi-owm-' + w.time_of_day + '-' + w.code + '"></i>' +
-                        '</div></div>' +
-                        '<div class="row">' +
-                        '<div class="col temp-forecast">' + w.temp.temp + '&#176; F' +
-                        '</div></div>' +
-                        '</div></div>'
-                    );
+                    var w = data.forecasts[i];
+                    var time = new Date(w.time);
+                    var forecasts_id = '#forecasts-' + this.id + '-' + i;
+                    $(forecasts_id).find(span_id(this.id, 'time', i)).html(
+                        time.getHours().pad(2) + ':' +
+                        time.getMinutes().pad(2) + ':' +
+                        time.getSeconds().pad(2));
+                    $(forecasts_id).find(span_id(this.id, 'date', i)).html(
+                        month_names[time.getMonth()] + ' ' + 
+                        time.getDate() + ', ' + 
+                        time.getFullYear());
+                    $(forecasts_id).find(span_id(this.id, 'timezone', i)).html('EST');//temp
+                    $(forecasts_id).find(span_id(this.id, 'weather-icon', i)).html(
+                        '<i class="wi wi-owm-' + w.time_of_day + '-' + w.code + '"></i>');
+                    $(forecasts_id).find(span_id(this.id, 'temp', i)).html(w.temp.temp);
+                    $(forecasts_id).find(span_id(this.id, 'temp-unit', i)).html(data.unit);
+                    
                     //'Temp: ' + w.temp.temp + ' F (' + w.temp.temp_min + ' - ' + w.temp.temp_max + ')<br/>' +
                     //'Status: ' + w.status + '<br/>' +
                 }
-                $('#forecasts-' + this.id).html(forecasts)
             }.bind(this)
         })
     }
