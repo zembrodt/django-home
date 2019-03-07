@@ -12,11 +12,8 @@ from urllib.request import urlopen
 from urllib.parse import quote
 from datetime import datetime, timedelta
 from dashboard.models import Module
-from dashboard.forms import (
-    WeatherForm
-)
+from .forms import WeatherForm, UNIT_DISPLAY
 from .models import Weather
-from .forms import UNIT_DISPLAY
 import json, math, pyowm, pytz as tz, os
 from timezonefinderL import TimezoneFinder
 from datetime import datetime as dt

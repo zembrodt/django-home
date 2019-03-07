@@ -1,7 +1,7 @@
 from django.shortcuts import redirect, render
 from django.template.loader import get_template
+from .forms import DateForm
 from .models import Datetime
-from dashboard.forms import DateForm
 
 # NOTE: placeholder
 def dt(request, module):

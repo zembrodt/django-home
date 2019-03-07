@@ -1,30 +1,29 @@
 from django.shortcuts import redirect, reverse, render, get_object_or_404
-from django.http.response import JsonResponse
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.http.response import JsonResponse
+from django.template.loader import get_template
+from django.templatetags.static import static
 from django.views.generic import (
     ListView,
     CreateView,
     DeleteView
 )
-from django.template.loader import get_template
-from django.templatetags.static import static
 from users.models import Profile
-from dashboard.models import Module
+from .forms import ModuleCreateForm
+from .models import Module
 from dt import views as dt_views
-from forecast import views as forecast_views
-from photos import views as photos_views
-from weather import views as weather_views
-from .forms import (
-    ModuleCreateForm,
-    DateForm,
-    WeatherForm
-)
+from dt.forms import DateForm
 from forecast.forms import ForecastForm
 from forecast.models import Forecast
+from forecast import views as forecast_views
 from photos.forms import ImageForm, PhotosForm, ImageFormSet
 from photos.models import Image, Photos
+from photos import views as photos_views
+from weather.forms import WeatherForm
+from weather import views as weather_views
+
 import json, re
 
 def home(request):
@@ -202,7 +201,7 @@ def module_create(request):
                     print(f'We have Forecast module! {forecast}')
                 else:
                     print('Form was not valid')
-            if str(module_type) == 'Photos':
+            elif str(module_type) == 'Photos':
                 photos_form = PhotosForm(request.POST)#, module=module)#, instance=module)
                 formset = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none())
                 if photos_form.is_valid() and formset.is_valid():
@@ -213,11 +212,11 @@ def module_create(request):
                     photos.save()
                     print(f'We have Photos module! {photos}')
                     for form in formset.cleaned_data:
-                        #this helps to not crash if the user   
-                        #do not upload all the photos
+                        # prevent crashing if the user doesn't upload all the photos
                         if form:
                             image_form = form['image']
-                            image = Image(photos_module=photos, image=image_form)
+                            public = form['public']
+                            image = Image(owner=user, photos_module=photos, image=image_form, public=public)
                             image.save()
             elif str(module_type) == 'Weather':
                 weather_form = WeatherForm(request.POST)#, module=module)#, instance=module)

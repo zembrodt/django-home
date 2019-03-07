@@ -1,8 +1,7 @@
 from django.shortcuts import redirect, render
 from django.template.loader import get_template
-#from dashboard.models import Module
+from .forms import PhotosForm
 from .models import Photos, Image
-from dashboard.forms import PhotosForm
 
 def photos(request, module):
     template = get_template('photos/photos.html')

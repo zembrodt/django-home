@@ -1,6 +1,7 @@
 from django.db import models
 from django.template.defaultfilters import slugify
 from dashboard.models import Module
+from users.models import Profile
 
 class Photos(models.Model):
     module = models.ForeignKey(Module, related_name='photos', on_delete=models.CASCADE)
@@ -19,11 +20,13 @@ class Photos(models.Model):
 def get_image_filename(instance, filename):
     #slug = slugify(filename)
     #return f'background_pics/{slug}-{filename}'
-    return f'background_pics/{filename}'
+    return f'user_images/{filename}'
 
 class Image(models.Model):
-    photos_module = models.ForeignKey(Photos, related_name='images', on_delete=models.CASCADE)
+    owner = models.ForeignKey(Profile, related_name='images', on_delete=models.CASCADE)
+    photos_module = models.ForeignKey(Photos, related_name='images', null=True, on_delete=models.SET_NULL)
     image = models.ImageField(null=False, upload_to=get_image_filename)
+    public = models.BooleanField(default=True)
 
     # Seems we only need this if we want to edit the image before saving (Max at a 1080p image? 4k?)
     '''
@@ -40,3 +43,10 @@ class Image(models.Model):
 
     def __str__(self):
         return f'Image for Photos module: {self.photos_module}'
+
+# TODO: If a user can upload their own images separaately from a photos module, we need a mapper so multiple modules
+#       can reference the same images
+'''
+class ImageToPhotos(models.Model):
+    image = models.ForeignKey(Image, related_name='photos')
+'''
