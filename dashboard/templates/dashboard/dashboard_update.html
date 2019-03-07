@@ -62,22 +62,38 @@
     $('div').filter(function() {
         return this.id.match(/id-.*/);
     }).each(function() {
-
-        var up_button = $('<input id="up" type="button" value="^">');
-        var down_button = $('<input id="down" type="button" value="v">');
-        var div = $(this);
-        $(this)
+        var delete_button = $('<input id="delete" type="button" value="X" class="module-button">');
+        var edit_button = $('<input id="edit" type="button" value="E" class="module-button">');
+        var up_button = $('<input id="up" type="button" value="^" class="module-button">');
+        var down_button = $('<input id="down" type="button" value="v" class="module-button">');
+        var module_div = $(this);
+        module_div.children().wrapAll('<div id="module" class="module-container"></div>');
+        sub_div = $(this).find('#module');
+        if ($(this).hasClass('moveable')) {
+            $(this).removeClass('moveable');
+            sub_div.addClass('moveable');
+        }
+        var button_div = module_div.append('<div id="buttons" class="button-container"></div>').find('#buttons');
+        button_div
+            .append(delete_button)
+            .append(edit_button)
             .append(up_button)
             .append(down_button)
-            .find('#up').click(function() {
-                var z_index = parseInt(div.css('z-index'));
-                div.css('z-index', z_index+1);
+            button_div.find('#delete').click(function() {
+            console.log('delete module')
+        });
+        button_div.find('#edit').click(function() {
+            console.log('edit module')
+        });
+        button_div.find('#up').click(function() {
+                var z_index = parseInt(module_div.css('z-index'));
+                module_div.css('z-index', z_index+1);
                 enableButton();
             });
-        $(this).find('#down').click(function() {
-                var z_index = parseInt(div.css('z-index'));
+        button_div.find('#down').click(function() {
+                var z_index = parseInt(module_div.css('z-index'));
                 console.log('z-index: '+z_index);
-                div.css('z-index', z_index-1);
+                module_div.css('z-index', z_index-1);
                 enableButton();
             });
     });
