@@ -16,5 +16,5 @@ urlpatterns = [
     #path('modules/add/', ModuleCreateView.as_view(), name='add-module')
     path('modules/add/', views.module_create, name='add-module'),
     path('modules/<int:pk>/update/', views.module_update, name='update-module'),
-    path('modules/<int:pk>/delete/', ModuleDeleteView.as_view(), name='delete-module')
+    path('modules/<int:pk>/delete/', views.module_delete, name='delete-module')
 ]

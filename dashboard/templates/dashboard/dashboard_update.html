@@ -91,6 +91,38 @@
         // Delete button
         button_div.find('#delete-' + id).click(function() {
             console.log('delete module for ' + $(this).attr('id'));
+            $.ajax(
+                {
+                type:"GET",
+                url: "/modules/" + id + "/delete/",//"{#% url 'update-module' %#}",
+                dataType: "json",
+                data:{
+                        //csrfmiddlewaretoken: '{{ csrf_token }}',
+                        //'id_data[]': id_data_temp
+                },
+                success: function(data) 
+                {
+                    console.log('We\'re deleting the module!');
+                    console.log('Response:');
+                    console.log(data);
+                    $('#dashboard').addClass('dashboard-background');
+                    // TODO: append to directly after #dashboard
+                    $('body').append(data.content);
+                    $('#form-' + id).submit(function(e) {
+                        var x = $(this).serialize();
+                        console.log('serialize: ' +x);
+                        $.post('/modules/' + id + '/delete/', $(this).serialize(), function(data) {
+                            console.log(data);
+                            // Delete the module's div
+                            $('#module-' + id).parent().remove();
+                            // Remove the pop-up
+                            $('#delete-form-' + id).remove();
+                            $('#dashboard').removeClass('dashboard-background');
+                        });
+                        e.preventDefault();
+                    });
+                }
+            });
         });
         // Edit button
         button_div.find('#edit-' + id).click(function() {

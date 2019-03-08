@@ -101,28 +101,6 @@ class ModuleListView(LoginRequiredMixin, ListView):#UserPassesTestMixin, ListVie
         return False
     '''
 
-'''
-class ModuleCreateView(LoginRequiredMixin, CreateView):
-    model = Module
-    fields = ['module_type', 'x', 'y']
-    title = 'Add Module'
-
-    def form_valid(self, form):
-        user = Profile.objects.filter(user=self.request.user).first()
-        form.instance.owner = user
-        return super().form_valid(form)
-'''
-
-class ModuleDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    model = Module
-
-    def test_func(self):
-        module = self.get_object()
-        return self.request.user.profile == module.owner
-    
-    def get_success_url(self):
-        return reverse('user-modules')
-
 def module_create(request):
     if request.is_ajax():
         if request.method == 'GET':
@@ -263,6 +241,22 @@ def module_update(request, **kwargs):
         return JsonResponse({'content': render, 'method': method})
     else:
         return render
+
+def module_delete(request, **kwargs):
+    module = get_object_or_404(Module, id=kwargs['pk'])
+    print(f'Module to delete: {module}')
+    if request.user.profile == module.owner:
+        if request.is_ajax():
+            if request.method == 'POST':
+                module.delete()
+                return JsonResponse({'blah': 'blah'})
+            else:
+                context = {
+                    'id': module.id,
+                    'module_type': module.module_type.module_type
+                }
+                template = get_template('dashboard/delete_form.html')
+                return JsonResponse({'content': template.render(context, request=request)})
 
 def generate_context(request):
     user = Profile.objects.filter(user=request.user).first()
