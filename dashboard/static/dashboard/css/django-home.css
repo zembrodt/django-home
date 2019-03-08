@@ -44,7 +44,7 @@ body {
     pointer-events: none;
 }
 
-.update-form {
+.popup-form {
     z-index: 1000;
     position: absolute;
     top: 50%;
