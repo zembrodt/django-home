@@ -18,9 +18,18 @@ def update_dt(request, module):
     form = DateForm(request.POST or None, instance=instance)
     if form.is_valid():
         form.save()
-        return redirect('user-modules')
+        print('Saved DT!')
+        if request.is_ajax():
+            return dt(request, module), 'update_dt'
+        else:
+            return redirect('user-modules')
     context = {
+        'id': module.id,
         'module_form': form,
         'module_type': 'dt'
     }
-    return render(request, 'dashboard/update_form.html', context)
+    if request.is_ajax():
+        form = get_template('dashboard/update_form_embedded.html')
+        return form.render(context, request=request), ''
+    else:
+        return render(request, 'dashboard/update_form.html', context)

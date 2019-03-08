@@ -1,0 +1,15 @@
+{% load crispy_forms_tags %}
+
+<div id='update-form-{{ id }}' class='update-form'>
+    <form id='form-{{ id }}' method="POST">
+        {% csrf_token %}
+        <fieldset>
+            <legend class="border-bottom mb-4">Update {{ module_type }} Module</legend>
+            {{ module_form|crispy }}
+        </fieldset>
+        <div id='extended_form'></div>
+        <div>
+            <button type="submit">Update</button>
+        </div>
+    </form>
+</div>
