@@ -2,6 +2,7 @@ from django.shortcuts import redirect, render
 from django.template.loader import get_template
 from .forms import DateForm
 from .models import Datetime
+from dashboard.forms import ModuleUpdateForm
 
 # NOTE: placeholder
 def dt(request, module):
@@ -15,9 +16,11 @@ def dt(request, module):
 
 def update_dt(request, module):
     instance = Datetime.objects.filter(module=module).first()
-    form = DateForm(request.POST or None, instance=instance)
-    if form.is_valid():
-        form.save()
+    module_form = ModuleUpdateForm(request.POST or None, instance=module)
+    dt_form = DateForm(request.POST or None, instance=instance)
+    if module_form.is_valid() and dt_form.is_valid():
+        module_form.save()
+        dt_form.save()
         print('Saved DT!')
         if request.is_ajax():
             return dt(request, module), 'update_dt'
@@ -25,7 +28,8 @@ def update_dt(request, module):
             return redirect('user-modules')
     context = {
         'id': module.id,
-        'module_form': form,
+        'module_form': module_form,
+        'extended_form': dt_form,
         'module_type': 'dt'
     }
     if request.is_ajax():

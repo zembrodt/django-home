@@ -218,29 +218,30 @@ def module_create(request):
 
 def module_update(request, **kwargs):
     module = get_object_or_404(Module, id=kwargs['pk'])
-    #module = Module.objects.filter(pk=kwargs['pk']).first()
-    # TODO: check if this module is owned by the user?
-    t = module.module_type.module_type
-    render = None
-    method = None
-    if t == 'dt':
-        render, method = dt_views.update_dt(request, module)
-    elif t == 'forecast':
-        render = forecast_views.update_forecast(request, module)
-    elif t == 'photos':
-        render = photos_views.update_photos(request, module)
-    elif t == 'weather':
-        render = weather_views.update_weather(request, module)
-    else:
-        # TODO: return a 404 page
-        pass
+    if request.user.profile == module.owner:
+        #module = Module.objects.filter(pk=kwargs['pk']).first()
+        # TODO: check if this module is owned by the user?
+        t = module.module_type.module_type
+        render = None
+        method = None
+        if t == 'dt':
+            render, method = dt_views.update_dt(request, module)
+        elif t == 'forecast':
+            render = forecast_views.update_forecast(request, module)
+        elif t == 'photos':
+            render = photos_views.update_photos(request, module)
+        elif t == 'weather':
+            render = weather_views.update_weather(request, module)
+        else:
+            # TODO: return a 404 page
+            pass
 
-    # Check if this was an AJAX call or not
-    if request.is_ajax():
-        print(f'ajax render: {render}')
-        return JsonResponse({'content': render, 'method': method})
-    else:
-        return render
+        # Check if this was an AJAX call or not
+        if request.is_ajax():
+            print(f'ajax render: {render}')
+            return JsonResponse({'content': render, 'method': method})
+        else:
+            return render
 
 def module_delete(request, **kwargs):
     module = get_object_or_404(Module, id=kwargs['pk'])
