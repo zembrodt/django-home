@@ -27,6 +27,7 @@
 {% endblock styles %}
 
 {% block content %}
+<div id="dashboard" class="dashboard">
     {% block update-content %}{% endblock update-content %}
     <!-- <h1>{{ user }}'s Dashboard</h1> -->
     {% for module, values in modules.items %}
@@ -35,6 +36,7 @@
             {{ values.content }}
         </div>
     {% endfor %}
+</div>
 {% endblock content %}
 
 {% block scripts %}
