@@ -46,6 +46,9 @@
         return $('#update-button').attr('disabled');
     }
 
+    const Z_INDEX_MAX = 100;
+    const Z_INDEX_MIN = -100;
+
     modules = [];
     // TODO: Move this into only JQuery code
 
@@ -85,9 +88,11 @@
             .append(edit_button)
             .append(up_button)
             .append(down_button)
+        // Delete button
         button_div.find('#delete-' + id).click(function() {
             console.log('delete module for ' + $(this).attr('id'));
         });
+        // Edit button
         button_div.find('#edit-' + id).click(function() {
             console.log('edit module for ' + $(this).attr('id'))
             $.ajax(
@@ -101,7 +106,6 @@
                 },
                 success: function(data) 
                 {
-                    // TODO: modify things here? Maybe fade out save button
                     console.log('We updated the module!');
                     //$('#update-response').html('Positions saved!');
                     console.log('Response:\n' + data.content)
@@ -127,15 +131,31 @@
                 }
             })
         });
+        // Arrows for z-index
         button_div.find('#up-' + id).click(function() {
             var z_index = parseInt(module_div.css('z-index'));
-            module_div.css('z-index', z_index+1);
+            if (z_index+1 <= Z_INDEX_MAX) {
+                module_div.css('z-index', z_index+1);
+                if (z_index+1 === Z_INDEX_MAX) {
+                    $('#up-' + id).attr('disabled', 'disabled');
+                }
+                else if ($('#down-' + id).attr('disabled')) {
+                    $('#down-' + id).removeAttr('disabled');
+                }
+            }
             enableButton();
         });
         button_div.find('#down-' + id).click(function() {
             var z_index = parseInt(module_div.css('z-index'));
-            console.log('z-index: '+z_index);
-            module_div.css('z-index', z_index-1);
+            if (z_index-1 >= Z_INDEX_MIN) {
+                module_div.css('z-index', z_index-1);
+                if (z_index-1 === Z_INDEX_MIN) {
+                    $('#down-' + id).attr('disabled', 'disabled');
+                }
+                else if ($('#up-' + id).attr('disabled')) {
+                    $('#up-' + id).removeAttr('disabled');
+                }
+            }
             enableButton();
         });
     });
