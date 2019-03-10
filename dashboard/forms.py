@@ -17,4 +17,13 @@ class ModuleCreateForm(forms.ModelForm):
                 'id': 'module_type'
             })
         }
-        '''        
+        '''
+
+class ModuleUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Module
+        # Only want to allow users to update fields they can't otherwise update on the dashboard-update page
+        fields = ['text_color']
+        widgets = {
+            'text_color': TextInput(attrs={'type': 'color'}),
+        }
