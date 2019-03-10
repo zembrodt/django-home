@@ -22,18 +22,13 @@ def update_dt(request, module):
         module_form.save()
         dt_form.save()
         print('Saved DT!')
-        if request.is_ajax():
-            return dt(request, module), 'update_dt'
-        else:
-            return redirect('user-modules')
+        #if request.is_ajax():
+        return dt(request, module), 'update_dt'
     context = {
         'id': module.id,
         'module_form': module_form,
         'extended_form': dt_form,
         'module_type': 'dt'
     }
-    if request.is_ajax():
-        form = get_template('dashboard/update_form_embedded.html')
-        return form.render(context, request=request), ''
-    else:
-        return render(request, 'dashboard/update_form.html', context)
+    form = get_template('dashboard/update_form_embedded.html')
+    return form.render(context, request=request), ''

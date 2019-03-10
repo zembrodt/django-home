@@ -101,52 +101,52 @@ class ModuleListView(LoginRequiredMixin, ListView):#UserPassesTestMixin, ListVie
         return False
     '''
 
-def module_create(request):
-    if request.is_ajax():
-        if request.method == 'GET':
-            module_type = request.GET.get('module_type')
-            # NOTE: do this with actual ids later
-            form_render = None
-            form_script = None
-            if module_type == 'Datetime':
-                dt_form = DateForm()
-                template = get_template('dt/dt_form.html')
-                context = {
-                    'dt_form': dt_form
-                }
-                form_render = template.render(context)
-            elif module_type == 'Forecast':
-                forecast_form = ForecastForm()
-                template = get_template('forecast/forecast_form.html')
-                context = {
-                    'forecast_form': forecast_form
-                }
-                form_render = template.render(context)
-            elif module_type == 'Photos':
-                photos_form = PhotosForm()
-                formset = ImageFormSet(queryset=Image.objects.none())
-                template = get_template('photos/photos_form.html')
-                context = {
-                    'photos_form': photos_form,
-                    'formset': formset
-                }
-                form_render = template.render(context)
-                form_script = 'photos/scripts/photos_form.js'
-            elif module_type == 'Weather':
-                weather_form = WeatherForm()
-                template = get_template('weather/weather_form.html')
-                context = {
-                    'weather_form': weather_form
-                }
-                form_render = template.render(context)
-            else:
-                # What do here?
-                form_render = None
+def get_extended_form(request):
+    if request.method == 'GET':
+        module_type = request.GET.get('module_type')
+        form_render = None
+        form_script = None
+        if module_type == 'Datetime':
+            dt_form = DateForm()
+            template = get_template('dt/dt_form.html')
             context = {
-                'extended_form': form_render,
-                'extended_script': static(form_script) if form_script else ''
+                'dt_form': dt_form
             }
-            return JsonResponse(context)
+            form_render = template.render(context)
+        elif module_type == 'Forecast':
+            forecast_form = ForecastForm()
+            template = get_template('forecast/forecast_form.html')
+            context = {
+                'forecast_form': forecast_form
+            }
+            form_render = template.render(context)
+        elif module_type == 'Photos':
+            photos_form = PhotosForm()
+            formset = ImageFormSet(queryset=Image.objects.none())
+            template = get_template('photos/photos_form.html')
+            context = {
+                'photos_form': photos_form,
+                'formset': formset
+            }
+            form_render = template.render(context)
+            form_script = 'photos/scripts/photos_form.js'
+        elif module_type == 'Weather':
+            weather_form = WeatherForm()
+            template = get_template('weather/weather_form.html')
+            context = {
+                'weather_form': weather_form
+            }
+            form_render = template.render(context)
+        else:
+            # What do here?
+            form_render = None
+        context = {
+            'extended_form': form_render,
+            'extended_script': static(form_script) if form_script else ''
+        }
+        return JsonResponse(context)
+
+def module_create(request):
     if request.method == 'POST':
         module_form = ModuleCreateForm(request.POST)
         if module_form.is_valid():
@@ -157,8 +157,48 @@ def module_create(request):
             print(f'Type is: \'{module_type}\'')
             #extended_form = None
             # NOTE: this is also temporary, use actual module ids
+            extended_form = None
+            extended_module = None
             if str(module_type) == 'Datetime':
-                dt_form = DateForm(request.POST)#, module=module)#, instance=module)
+                extended_form = DateForm(request.POST)
+            elif str(module_type) == 'Forecast':
+                extended_form = ForecastForm(request.POST)
+            elif str(module_type) == 'Photos':
+                extended_form = PhotosForm(request.POST)
+                formset = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none())
+                if extended_form.is_valid() and formset.is_valid():
+                    extended_module = extended_form.save(commit=False)
+                    for form in formset.cleaned_data:
+                        # prevent crashing if the user doesn't upload all the photos
+                        if form:
+                            image_form = form['image']
+                            public = form['public']
+                            image = Image(owner=user, photos_module=extended_module, image=image_form, public=public)
+                            image.save()
+            elif str(module_type) == 'Weather':
+                extended_form = WeatherForm(request.POST)
+            else:
+                pass
+            
+            # Temporary save the module if it wasn't saved above
+            if extended_form.is_valid() and extended_module is None:
+                extended_module = extended_form.save(commit=False)
+            # Save all data from the form
+            if extended_form.is_valid():
+                module.owner = user
+                module.save()
+                extended_module.module = module
+                extended_module.save()
+            # TODO: complete this
+            context = {
+                # NOTE: adding a style tag to head may not work, may need to put this as a 'style' within the div
+                # it seems to work, however
+                'style': '<style>#new-module { color: yellow; }</style>',   # Module's style
+                'content': '<div id="new-module" style="position: absolute">New module div!</div>', # Module's div
+                'script': '<script>console.log("New module script!");</script>'   # Module's script
+            }
+            return JsonResponse(context)
+            '''
                 if dt_form.is_valid():
                     dt = dt_form.save(commit=False)
                     module.owner = user
@@ -208,13 +248,16 @@ def module_create(request):
             else:
                 # TODO: what do?
                 pass
-            return redirect('user-modules') # Can also redirect to an object's get_absolute_url()
+            '''
+            #return redirect('user-modules') # Can also redirect to an object's get_absolute_url()
     else:
         module_form = ModuleCreateForm()
     context = {
         'module_form': module_form
     }
-    return render(request, 'dashboard/module_form.html', context)
+    template = get_template('dashboard/add_module.html')
+    return JsonResponse({'content': template.render(context, request=request)})
+    #return render(request, 'dashboard/module_form.html', context)
 
 def module_update(request, **kwargs):
     module = get_object_or_404(Module, id=kwargs['pk'])
@@ -237,11 +280,9 @@ def module_update(request, **kwargs):
             pass
 
         # Check if this was an AJAX call or not
-        if request.is_ajax():
-            print(f'ajax render: {render}')
-            return JsonResponse({'content': render, 'method': method})
-        else:
-            return render
+        #if request.is_ajax():
+        print(f'ajax render: {render}')
+        return JsonResponse({'content': render, 'method': method})
 
 def module_delete(request, **kwargs):
     module = get_object_or_404(Module, id=kwargs['pk'])

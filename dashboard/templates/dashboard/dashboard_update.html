@@ -12,13 +12,17 @@
 {% block update-content %}
 <div style='z-index: 100; position: absolute'>
     <form id='update-dashboard'>
-        <button id='update-button' type='submit' disabled>Save Dashboard</button>
+        <button id='update-button' class='btn btn-primary' type='submit' disabled>Save Dashboard</button>
     </form>
     <div id='update-response' style='color: green'></div>
     <small>
         <a href="{% url 'home' %}">Back</a>
+        <span style='color: white;'>&nbsp;|&nbsp;</span>
         <a href="{% url 'dashboard' %}">Dashboard</a>
     </small>
+    <p>
+    <button id='add-button' class='btn btn-success' type='button'>Add Module</button>
+    </p>
 </div>
 {% endblock %}
 
@@ -64,6 +68,54 @@
         {% endwith %}
     {% endfor %}
 
+    // Add button
+    $('#add-button').click(function() {
+        $.get('/modules/add/', {}, function(data) {
+            $('#dashboard').addClass('dashboard-background');
+            // TODO: append to directly after #dashboard
+            $('body').append(data.content);
+            console.log('Got an add response!');
+            console.log(data.content);
+            $('#id_module_type').change(function() {
+                console.log('module type changed!');
+                $.ajax({
+                    type: 'GET',
+                    url: '/modules/add/form/',
+                    dataType: 'json',
+                    data: {
+                        module_type: $('#id_module_type option:selected').text()
+                    },
+                    success: function(data) {
+                        $('#extended_form').html(data.extended_form);
+                        var extended_script = document.createElement('script');
+                        extended_script.setAttribute('id', 'id-extended-script');
+                        extended_script.onload = function () {
+                            //do stuff with the script
+                        };
+                        extended_script.src = data.extended_script;
+
+                        document.body.appendChild(extended_script);
+                    }
+                })
+            });
+            $('#add-form').submit(function(e) {
+                $.post('/modules/add/', $(this).serialize(), function(data) {
+                    // Delete the form's script
+                    $('#id-extended-script').remove();
+                    // Remove the pop-up
+                    $('#add-form-container').remove();
+                    $('#dashboard').removeClass('dashboard-background');
+                    // Add the new module
+                    console.log(data);
+                    $('head').append(data.style); // NOTE see views.py why appending to the head may not be a good idea
+                    $('#dashboard').append(data.content);
+                    $('body').append(data.script);
+                });
+                e.preventDefault();
+            });
+        });
+    });
+
     $('div').filter(function() {
         return this.id.match(/id-.+-\d+/);
     }).each(function() {
@@ -102,9 +154,6 @@
                 },
                 success: function(data) 
                 {
-                    console.log('We\'re deleting the module!');
-                    console.log('Response:');
-                    console.log(data);
                     $('#dashboard').addClass('dashboard-background');
                     // TODO: append to directly after #dashboard
                     $('body').append(data.content);
@@ -114,10 +163,7 @@
                         $('#dashboard').removeClass('dashboard-background');
                     });
                     $('#form-' + id).submit(function(e) {
-                        var x = $(this).serialize();
-                        console.log('serialize: ' +x);
                         $.post('/modules/' + id + '/delete/', $(this).serialize(), function(data) {
-                            console.log(data);
                             // Delete the module's div
                             $('#module-' + id).parent().remove();
                             // Remove the pop-up
@@ -144,8 +190,6 @@
                 success: function(data) 
                 {
                     console.log('We updated the module!');
-                    //$('#update-response').html('Positions saved!');
-                    console.log('Response:\n' + data.content)
                     $('#dashboard').addClass('dashboard-background');
                     // TODO: append to directly after #dashboard
                     $('body').append(data.content);
@@ -155,10 +199,7 @@
                         $('#dashboard').removeClass('dashboard-background');
                     });
                     $('#form-' + id).submit(function(e) {
-                        var x = $(this).serialize();
-                        console.log('serialize: ' +x);
                         $.post('/modules/' + id + '/update/', $(this).serialize(), function(data) {
-                            console.log(data);
                             $('#module-' + id).html(data.content);
                             $('#update-form-' + id).remove();
                             $('#dashboard').removeClass('dashboard-background');
@@ -209,6 +250,21 @@
     //    });
     //}
 
+    function updateButtonsPos(id) {
+        if (parseInt($('#buttons-' + id).parent().css('left')) +
+                $('#module-' + id).width() +
+                $('#buttons-'+id).width() >= $('#dashboard')[0].clientWidth) {
+            console.log('Move to the left!')
+            $('#buttons-' + id).addClass('buttons-left');
+            $('#buttons-' + id).css('left', -$('#buttons-' + id).width() + 'px')
+        }
+        else if ($('#buttons-' + id).hasClass('buttons-left')) {
+            $('#buttons-' + id).removeClass('buttons-left');
+            $('#buttons-' + id).css('left', '');
+            console.log('Move back to the right!');
+        }
+    }
+
     function dragElement(elmnt) {
         var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
         elmnt.onmousedown = dragMouseDown;
@@ -246,19 +302,7 @@
             
             // Update positions of the buttons div
             // TODO: we may want to put this in if-statement for newX check
-            
-            if (parseInt($('#buttons-' + id).parent().css('left')) +
-                    $('#module-' + id).width() +
-                    $('#buttons-'+id).width() >= $('#dashboard')[0].clientWidth) {
-                console.log('Move to the left!')
-                $('#buttons-' + id).addClass('buttons-left');
-                $('#buttons-' + id).css('left', -$('#buttons-' + id).width() + 'px')
-            }
-            else if ($('#buttons-' + id).hasClass('buttons-left')) {
-                $('#buttons-' + id).removeClass('buttons-left');
-                $('#buttons-' + id).css('left', '');
-                console.log('Move back to the right!');
-            }
+            updateButtonsPos(id);
 
             // Enable the update button if needed
             if (isButtonDisabled()) {
@@ -289,6 +333,16 @@
         // You must return false to prevent the default form behavior
         return false;
     }
+
+    // $(document).ajaxComplete(function() {
+    //     console.log('ajax done!')
+    //     $(document.body).find('div').each(function() { 
+    //         if (this.id.match(/id-.+-\d+/)) {
+    //             var id = this.id.match(/id-.+(\d+)/)[0];
+    //             updateButtonsPos(id);
+    //         }
+    //     });
+    // });
 
     var form = document.getElementById('update-dashboard');
     if (form.attachEvent) {
