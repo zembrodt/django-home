@@ -10,7 +10,8 @@
 {% endblock %}
 
 {% block update-content %}
-    <form id='update-dashboard' style='z-index: 100; position: absolute'>
+<div style='z-index: 100; position: absolute'>
+    <form id='update-dashboard'>
         <button id='update-button' type='submit' disabled>Save Dashboard</button>
     </form>
     <div id='update-response' style='color: green'></div>
@@ -18,6 +19,7 @@
         <a href="{% url 'home' %}">Back</a>
         <a href="{% url 'dashboard' %}">Dashboard</a>
     </small>
+</div>
 {% endblock %}
 
 {% block update-scripts %}
@@ -44,6 +46,9 @@
         return $('#update-button').attr('disabled');
     }
 
+    const Z_INDEX_MAX = 100;
+    const Z_INDEX_MIN = -100;
+
     modules = [];
     // TODO: Move this into only JQuery code
 
@@ -60,26 +65,141 @@
     {% endfor %}
 
     $('div').filter(function() {
-        return this.id.match(/id-.*/);
+        return this.id.match(/id-.+-\d+/);
     }).each(function() {
-
-        var up_button = $('<input id="up" type="button" value="^">');
-        var down_button = $('<input id="down" type="button" value="v">');
-        var div = $(this);
-        $(this)
+        if (!$(this).hasClass('moveable')) {
+            return;
+        }
+        var id = $(this).attr('id').match(/id-.+-(\d+)/)[1];
+        var delete_button = $('<input id="delete-' + id + '" type="button" value="X" class="module-button">');
+        var edit_button = $('<input id="edit-' + id + '" type="button" value="E" class="module-button">');
+        var up_button = $('<input id="up-' + id + '" type="button" value="^" class="module-button">');
+        var down_button = $('<input id="down-' + id + '" type="button" value="v" class="module-button">');
+        var module_div = $(this);
+        module_div.children().wrapAll('<div id="module-' + id + '" class="module-container"></div>');
+        sub_div = $(this).find('#module-' + id);
+        if ($(this).hasClass('moveable')) {
+            $(this).removeClass('moveable');
+            sub_div.addClass('moveable');
+        }
+        var button_div = module_div.append('<div id="buttons-' + id + '" class="button-container"></div>').find('#buttons-' + id);
+        button_div
+            .append(delete_button)
+            .append(edit_button)
             .append(up_button)
             .append(down_button)
-            .find('#up').click(function() {
-                var z_index = parseInt(div.css('z-index'));
-                div.css('z-index', z_index+1);
-                enableButton();
+        // Delete button
+        button_div.find('#delete-' + id).click(function() {
+            console.log('delete module for ' + $(this).attr('id'));
+            $.ajax(
+                {
+                type:"GET",
+                url: "/modules/" + id + "/delete/",//"{#% url 'update-module' %#}",
+                dataType: "json",
+                data:{
+                        //csrfmiddlewaretoken: '{{ csrf_token }}',
+                        //'id_data[]': id_data_temp
+                },
+                success: function(data) 
+                {
+                    console.log('We\'re deleting the module!');
+                    console.log('Response:');
+                    console.log(data);
+                    $('#dashboard').addClass('dashboard-background');
+                    // TODO: append to directly after #dashboard
+                    $('body').append(data.content);
+                    // Add function to delete button
+                    $('#delete-cancel-' + id).click(function() {
+                        $('#delete-form-' + id).remove();
+                        $('#dashboard').removeClass('dashboard-background');
+                    });
+                    $('#form-' + id).submit(function(e) {
+                        var x = $(this).serialize();
+                        console.log('serialize: ' +x);
+                        $.post('/modules/' + id + '/delete/', $(this).serialize(), function(data) {
+                            console.log(data);
+                            // Delete the module's div
+                            $('#module-' + id).parent().remove();
+                            // Remove the pop-up
+                            $('#delete-form-' + id).remove();
+                            $('#dashboard').removeClass('dashboard-background');
+                        });
+                        e.preventDefault();
+                    });
+                }
             });
-        $(this).find('#down').click(function() {
-                var z_index = parseInt(div.css('z-index'));
-                console.log('z-index: '+z_index);
-                div.css('z-index', z_index-1);
-                enableButton();
-            });
+        });
+        // Edit button
+        button_div.find('#edit-' + id).click(function() {
+            console.log('edit module for ' + $(this).attr('id'))
+            $.ajax(
+            {
+                type:"GET",
+                url: "/modules/" + id + "/update/",//"{#% url 'update-module' %#}",
+                dataType: "json",
+                data:{
+                        //csrfmiddlewaretoken: '{{ csrf_token }}',
+                        //'id_data[]': id_data_temp
+                },
+                success: function(data) 
+                {
+                    console.log('We updated the module!');
+                    //$('#update-response').html('Positions saved!');
+                    console.log('Response:\n' + data.content)
+                    $('#dashboard').addClass('dashboard-background');
+                    // TODO: append to directly after #dashboard
+                    $('body').append(data.content);
+                    // Add functionality to cancel button
+                    $('#update-cancel-' + id).click(function() {
+                        $('#update-form-' + id).remove();
+                        $('#dashboard').removeClass('dashboard-background');
+                    });
+                    $('#form-' + id).submit(function(e) {
+                        var x = $(this).serialize();
+                        console.log('serialize: ' +x);
+                        $.post('/modules/' + id + '/update/', $(this).serialize(), function(data) {
+                            console.log(data);
+                            $('#module-' + id).html(data.content);
+                            $('#update-form-' + id).remove();
+                            $('#dashboard').removeClass('dashboard-background');
+                            var fn = window[data.method];
+                            if (typeof fn === 'function') {
+                                console.log(data.method + ' is a function!');
+                                fn(id);
+                            }
+                        });
+                        e.preventDefault();
+                    });
+                }
+            })
+        });
+        // Arrows for z-index
+        button_div.find('#up-' + id).click(function() {
+            var z_index = parseInt(module_div.css('z-index'));
+            if (z_index+1 <= Z_INDEX_MAX) {
+                module_div.css('z-index', z_index+1);
+                if (z_index+1 === Z_INDEX_MAX) {
+                    $('#up-' + id).attr('disabled', 'disabled');
+                }
+                else if ($('#down-' + id).attr('disabled')) {
+                    $('#down-' + id).removeAttr('disabled');
+                }
+            }
+            enableButton();
+        });
+        button_div.find('#down-' + id).click(function() {
+            var z_index = parseInt(module_div.css('z-index'));
+            if (z_index-1 >= Z_INDEX_MIN) {
+                module_div.css('z-index', z_index-1);
+                if (z_index-1 === Z_INDEX_MIN) {
+                    $('#down-' + id).attr('disabled', 'disabled');
+                }
+                else if ($('#up-' + id).attr('disabled')) {
+                    $('#up-' + id).removeAttr('disabled');
+                }
+            }
+            enableButton();
+        });
     });
 
     //Make the DIV element draggable:
@@ -112,9 +232,33 @@
             pos2 = pos4 - e.clientY;
             pos3 = e.clientX;
             pos4 = e.clientY;
-            // set the element's new position:
-            elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-            elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+            
+            // check bounds and set the element's new position:
+            var newX = elmnt.offsetLeft - pos1;
+            var newY = elmnt.offsetTop - pos2;
+            var id = elmnt.id.match(/id-.+-(\d+)/)[1];
+            if (newX >= 0 && newX + $('#module-' + id).width() <= $('#dashboard')[0].clientWidth) {
+                elmnt.style.left = (newX) + "px";
+            }
+            if (newY >= 0 && newY + $('#module-' + id).height() <= $('#dashboard')[0].clientHeight) {
+                elmnt.style.top = (newY) + "px";
+            }
+            
+            // Update positions of the buttons div
+            // TODO: we may want to put this in if-statement for newX check
+            
+            if (parseInt($('#buttons-' + id).parent().css('left')) +
+                    $('#module-' + id).width() +
+                    $('#buttons-'+id).width() >= $('#dashboard')[0].clientWidth) {
+                console.log('Move to the left!')
+                $('#buttons-' + id).addClass('buttons-left');
+                $('#buttons-' + id).css('left', -$('#buttons-' + id).width() + 'px')
+            }
+            else if ($('#buttons-' + id).hasClass('buttons-left')) {
+                $('#buttons-' + id).removeClass('buttons-left');
+                $('#buttons-' + id).css('left', '');
+                console.log('Move back to the right!');
+            }
 
             // Enable the update button if needed
             if (isButtonDisabled()) {

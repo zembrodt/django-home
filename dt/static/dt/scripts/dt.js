@@ -4,6 +4,7 @@ class Datetime {
     constructor(id) { // other things?
         this.id = id;
         this.twenty_four_hours = parseInt($('#twenty_four_hours-' + id).val());
+        console.log('new twenty_four_hours: ' + this.twenty_four_hours);
     }
     get_id() {
         return this.id;
@@ -86,4 +87,14 @@ $('div').each(function() {
 
 for (var i in datetimes) {
     init_clock(datetimes[i]);
+}
+
+function update_dt(id) {
+    // TODO: update this array to a dict
+    for (var i in datetimes) {
+        if (datetimes[i].get_id() == id) {
+            datetimes[i] = new Datetime(id);
+            init_clock(datetimes[i]);
+        }
+    }
 }
