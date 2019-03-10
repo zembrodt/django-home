@@ -108,6 +108,11 @@
                     $('#dashboard').addClass('dashboard-background');
                     // TODO: append to directly after #dashboard
                     $('body').append(data.content);
+                    // Add function to delete button
+                    $('#delete-cancel-' + id).click(function() {
+                        $('#delete-form-' + id).remove();
+                        $('#dashboard').removeClass('dashboard-background');
+                    });
                     $('#form-' + id).submit(function(e) {
                         var x = $(this).serialize();
                         console.log('serialize: ' +x);
@@ -144,6 +149,11 @@
                     $('#dashboard').addClass('dashboard-background');
                     // TODO: append to directly after #dashboard
                     $('body').append(data.content);
+                    // Add functionality to cancel button
+                    $('#update-cancel-' + id).click(function() {
+                        $('#update-form-' + id).remove();
+                        $('#dashboard').removeClass('dashboard-background');
+                    });
                     $('#form-' + id).submit(function(e) {
                         var x = $(this).serialize();
                         console.log('serialize: ' +x);

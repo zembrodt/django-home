@@ -85,8 +85,8 @@ class Forecast {
     }
 }
 
+forecasts = [];
 $(document).ready(function() {
-    forecasts = [];
     $('div').each(function() {
         if (this.id.match(/id-forecast-\d+/)) {
             forecast = new Forecast(this.id.split('-')[2])
@@ -99,3 +99,13 @@ $(document).ready(function() {
         forecasts[i].getLocation();
     }
 });
+
+function update_forecast(id) {
+    // TODO: update this array to a dict
+    for (var i in forecasts) {
+        if (forecasts[i].get_id() == id) {
+            forecasts[i] = new Forecast(id);
+            forecasts[i].getLocation();
+        }
+    }
+}

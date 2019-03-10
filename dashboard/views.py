@@ -227,11 +227,11 @@ def module_update(request, **kwargs):
         if t == 'dt':
             render, method = dt_views.update_dt(request, module)
         elif t == 'forecast':
-            render = forecast_views.update_forecast(request, module)
+            render, method = forecast_views.update_forecast(request, module)
         elif t == 'photos':
-            render = photos_views.update_photos(request, module)
+            render, method = photos_views.update_photos(request, module)
         elif t == 'weather':
-            render = weather_views.update_weather(request, module)
+            render, method = weather_views.update_weather(request, module)
         else:
             # TODO: return a 404 page
             pass
