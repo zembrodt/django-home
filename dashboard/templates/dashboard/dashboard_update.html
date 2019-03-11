@@ -107,9 +107,17 @@
                     $('#dashboard').removeClass('dashboard-background');
                     // Add the new module
                     console.log(data);
-                    $('head').append(data.style); // NOTE see views.py why appending to the head may not be a good idea
-                    $('#dashboard').append(data.content);
-                    $('body').append(data.script);
+                    //$('head').append('<style>' + data.style + '</style>') // NOTE see views.py why appending to the head may not be a good idea
+                    //     .ready(function() {
+                    $('#dashboard').append(data.content);//.ready(function() {
+                    var fn = window[data.method];
+                    if (typeof fn === 'function') {
+                        console.log(data.method + ' is a function!');
+                        fn(data.id);
+                    }
+                    //        });
+                    //     });
+                    //$('body').append(data.script);
                 });
                 e.preventDefault();
             });

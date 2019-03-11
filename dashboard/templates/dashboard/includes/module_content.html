@@ -1,0 +1,14 @@
+<div id="id-{{ type }}-{{ id }}" class="module">
+    {#% if ajax %#}
+        <!-- <div style="
+            position: absolute;
+            z-index: {{ values.zindex }}; 
+            top: {{ values.top }}px; 
+            left: {{ values.left }}px; 
+            color: {{ values.color }}"> -->
+    {#% endif %#}
+    {{ content }}
+    {#% if ajax %#}
+        <!-- </div> -->
+    {#% endif %#}
+</div>

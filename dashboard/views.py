@@ -190,12 +190,48 @@ def module_create(request):
                 extended_module.module = module
                 extended_module.save()
             # TODO: complete this
+            module_style = get_template('dashboard/includes/module_style.html')
+            module_content = get_template('dashboard/includes/module_content.html')
+            page_content = get_content(request, module)
+            update_method = get_update_method(module)
+            module_script = get_template('dashboard/includes/module_script.html')
             context = {
+                'id': module.id,
                 # NOTE: adding a style tag to head may not work, may need to put this as a 'style' within the div
                 # it seems to work, however
-                'style': '<style>#new-module { color: yellow; }</style>',   # Module's style
-                'content': '<div id="new-module" style="position: absolute">New module div!</div>', # Module's div
-                'script': '<script>console.log("New module script!");</script>'   # Module's script
+                'style': module_style.render({
+                    'id': module.id,
+                    'type': module.module_type.module_type,
+                    'values': {
+                        'z-index': module.z_index,
+                        'top': module.y,
+                        'left': module.x,
+                        'color': module.text_color,
+                    },
+                }),   # Module's style
+                'content': module_content.render({
+                    'id': module.id,
+                    'type': module.module_type.module_type,
+                    'content': page_content['content'],
+                    'moveable': page_content['moveable'],
+                    'ajax': True,
+                    'values': {
+                        'zindex': module.z_index,
+                        'top': module.y,
+                        'left': module.x,
+                        'color': module.text_color,
+                    }
+                }), # Module's div
+                'values': {
+                    'zindex': module.z_index,
+                    'top': module.y,
+                    'left': module.x,
+                    'color': module.text_color,
+                },
+                'script': module_script.render({
+
+                }), # Module's script
+                'method': update_method,
             }
             return JsonResponse(context)
             '''
@@ -305,36 +341,56 @@ def generate_context(request):
     modules = {}
     unique_modules = []
     for module in Module.objects.filter(owner=user):
-        moveable = True
-        t = module.module_type.module_type
-        if t not in unique_modules:
-            unique_modules.append(t)
-        # TODO: may need to assign this dict key to pk of module to allow multiple copies
-        page_render = None
-        if t == 'dt':
-            page_render = dt_views.dt(request, module)
-        elif t == 'forecast':
-            page_render = forecast_views.forecast(request, module)
-        elif t == 'photos':
-            page_render = photos_views.photos(request, module)
-            if Photos.objects.filter(module=module).first().is_background:
-                moveable = False
-        elif t == 'weather':
-            page_render = weather_views.weather(request, module)
+        module_type = module.module_type.module_type
+        if module_type not in unique_modules:
+            unique_modules.append(module_type)
+        
+        page_content = get_content(request, module)
 
         modules[module.id] = {
             'id': module.id,
-            'type': t,
-            'styles': f'{t}/includes/{t}_styles.html',
-            'scripts': f'{t}/includes/{t}_scripts.html',
-            #'page': f'{t}/{t}.html',
+            'type': module_type,
+            'styles': f'{module_type}/includes/{module_type}_styles.html',
+            'scripts': f'{module_type}/includes/{module_type}_scripts.html',
+            #'page': f'{module_type}/{module_type}.html',
             'top': module.y,
             'left': module.x,
             'z_index': module.z_index,
             'text_color': module.text_color,
-            'moveable': moveable,
-            'content': page_render,
+            'moveable': page_content['moveable'],
+            'content': page_content['content'],
         }
     return modules, unique_modules
+
+def get_content(request, module):
+    module_type = module.module_type.module_type
+    moveable = True
+    page_render = None
+    # TODO: may need to assign this dict key to pk of module to allow multiple copies
+    if module_type == 'dt':
+        page_render = dt_views.dt(request, module)
+    elif module_type == 'forecast':
+        page_render = forecast_views.forecast(request, module)
+    elif module_type == 'photos':
+        page_render = photos_views.photos(request, module)
+        if Photos.objects.filter(module=module).first().is_background:
+            moveable = False
+    elif module_type == 'weather':
+        page_render = weather_views.weather(request, module)
+    return {
+        'content': page_render,
+        'moveable': moveable,
+    }
+
+def get_update_method(module):
+    module_type = module.module_type.module_type
+    if module_type == 'dt':
+        return 'update_dt'
+    elif module_type == 'forecast':
+        return 'update_forecast'
+    elif module_type == 'photos':
+        return 'update_photos'
+    elif module_type == 'weather':
+        return 'update_weather'
 
 # Module-specific gets

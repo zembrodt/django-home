@@ -90,11 +90,18 @@ for (var i in datetimes) {
 }
 
 function update_dt(id) {
+    var found_dt = false;
     // TODO: update this array to a dict
     for (var i in datetimes) {
         if (datetimes[i].get_id() == id) {
             datetimes[i] = new Datetime(id);
+            found_dt = true;
             init_clock(datetimes[i]);
         }
+    }
+    if (!found_dt) {
+        var dt = new Datetime(id);
+        datetimes.push(dt);
+        init_clock(dt);
     }
 }
