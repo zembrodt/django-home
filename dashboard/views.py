@@ -197,6 +197,7 @@ def module_create(request):
             module_script = get_template('dashboard/includes/module_script.html')
             context = {
                 'id': module.id,
+                'type': module.module_type.module_type,
                 # NOTE: adding a style tag to head may not work, may need to put this as a 'style' within the div
                 # it seems to work, however
                 'style': module_style.render({
@@ -227,6 +228,7 @@ def module_create(request):
                     'top': module.y,
                     'left': module.x,
                     'color': module.text_color,
+                    'moveable': page_content['moveable'],
                 },
                 'script': module_script.render({
 

@@ -73,7 +73,11 @@
         $.get('/modules/add/', {}, function(data) {
             $('#dashboard').addClass('dashboard-background');
             // TODO: append to directly after #dashboard
-            $('body').append(data.content);
+            $('#dashboard').after(data.content);
+            $('#add-cancel').click(function() {
+                $('#add-form-container').remove();
+                $('#dashboard').removeClass('dashboard-background');
+            });
             console.log('Got an add response!');
             console.log(data.content);
             $('#id_module_type').change(function() {
@@ -109,12 +113,29 @@
                     console.log(data);
                     //$('head').append('<style>' + data.style + '</style>') // NOTE see views.py why appending to the head may not be a good idea
                     //     .ready(function() {
-                    $('#dashboard').append(data.content);//.ready(function() {
-                    var fn = window[data.method];
-                    if (typeof fn === 'function') {
-                        console.log(data.method + ' is a function!');
-                        fn(data.id);
-                    }
+                    $('#dashboard').append(data.content).ready(function() {
+                        var module_id = 'id-' + data.type + '-' + data.id;
+                        $('#' + module_id)
+                            .css('z-index', data.values.zindex)
+                            .css('top', data.values.top)
+                            .css('left', data.values.left)
+                            .css('color', data.values.color)
+                        var fn = window[data.method];
+                        if (typeof fn === 'function') {
+                            console.log(data.method + ' is a function!');
+                            fn(data.id);
+                        }
+                        if (data.values.moveable) {
+                            console.log('module id: ' + module_id);
+                            console.log('Exists? ' + $('#'+module_id).length);
+                            $('#' + module_id)
+                                .addClass('moveable')
+                                .ready(function() {
+                                    dragElement(document.getElementById(module_id));
+                                    createModuleButtons($('#' + module_id));
+                                });
+                        }
+                    });
                     //        });
                     //     });
                     //$('body').append(data.script);
@@ -124,25 +145,30 @@
         });
     });
 
+
+    // Initialize all module buttons
     $('div').filter(function() {
         return this.id.match(/id-.+-\d+/);
     }).each(function() {
         if (!$(this).hasClass('moveable')) {
             return;
         }
-        var id = $(this).attr('id').match(/id-.+-(\d+)/)[1];
+        createModuleButtons($(this));
+    });
+
+    function createModuleButtons(elmnt) {
+        var id = elmnt.attr('id').match(/id-.+-(\d+)/)[1];
         var delete_button = $('<input id="delete-' + id + '" type="button" value="X" class="module-button">');
         var edit_button = $('<input id="edit-' + id + '" type="button" value="E" class="module-button">');
         var up_button = $('<input id="up-' + id + '" type="button" value="^" class="module-button">');
         var down_button = $('<input id="down-' + id + '" type="button" value="v" class="module-button">');
-        var module_div = $(this);
-        module_div.children().wrapAll('<div id="module-' + id + '" class="module-container"></div>');
-        sub_div = $(this).find('#module-' + id);
-        if ($(this).hasClass('moveable')) {
-            $(this).removeClass('moveable');
+        elmnt.children().wrapAll('<div id="module-' + id + '" class="module-container"></div>');
+        sub_div = elmnt.find('#module-' + id);
+        if (elmnt.hasClass('moveable')) {
+            elmnt.removeClass('moveable');
             sub_div.addClass('moveable');
         }
-        var button_div = module_div.append('<div id="buttons-' + id + '" class="button-container"></div>').find('#buttons-' + id);
+        var button_div = elmnt.append('<div id="buttons-' + id + '" class="button-container"></div>').find('#buttons-' + id);
         button_div
             .append(delete_button)
             .append(edit_button)
@@ -164,7 +190,7 @@
                 {
                     $('#dashboard').addClass('dashboard-background');
                     // TODO: append to directly after #dashboard
-                    $('body').append(data.content);
+                    $('#dashboard').after(data.content);
                     // Add function to delete button
                     $('#delete-cancel-' + id).click(function() {
                         $('#delete-form-' + id).remove();
@@ -200,7 +226,7 @@
                     console.log('We updated the module!');
                     $('#dashboard').addClass('dashboard-background');
                     // TODO: append to directly after #dashboard
-                    $('body').append(data.content);
+                    $('#dashboard').after(data.content);
                     // Add functionality to cancel button
                     $('#update-cancel-' + id).click(function() {
                         $('#update-form-' + id).remove();
@@ -224,9 +250,9 @@
         });
         // Arrows for z-index
         button_div.find('#up-' + id).click(function() {
-            var z_index = parseInt(module_div.css('z-index'));
+            var z_index = parseInt(elmnt.css('z-index'));
             if (z_index+1 <= Z_INDEX_MAX) {
-                module_div.css('z-index', z_index+1);
+                elmnt.css('z-index', z_index+1);
                 if (z_index+1 === Z_INDEX_MAX) {
                     $('#up-' + id).attr('disabled', 'disabled');
                 }
@@ -237,9 +263,9 @@
             enableButton();
         });
         button_div.find('#down-' + id).click(function() {
-            var z_index = parseInt(module_div.css('z-index'));
+            var z_index = parseInt(elmnt.css('z-index'));
             if (z_index-1 >= Z_INDEX_MIN) {
-                module_div.css('z-index', z_index-1);
+                elmnt.css('z-index', z_index-1);
                 if (z_index-1 === Z_INDEX_MIN) {
                     $('#down-' + id).attr('disabled', 'disabled');
                 }
@@ -249,7 +275,7 @@
             }
             enableButton();
         });
-    });
+    }
 
     //Make the DIV element draggable:
     //for (module in modules) {
