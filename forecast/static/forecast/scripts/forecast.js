@@ -101,11 +101,18 @@ $(document).ready(function() {
 });
 
 function update_forecast(id) {
+    var found_forecast = false;
     // TODO: update this array to a dict
     for (var i in forecasts) {
         if (forecasts[i].get_id() == id) {
+            found_forecast = true;
             forecasts[i] = new Forecast(id);
             forecasts[i].getLocation();
         }
+    }
+    if (!found_forecast) {
+        var forecast = new Forecast(id);
+        forecasts.push(forecast);
+        forecast.getLocation();
     }
 }

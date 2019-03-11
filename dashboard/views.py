@@ -101,52 +101,52 @@ class ModuleListView(LoginRequiredMixin, ListView):#UserPassesTestMixin, ListVie
         return False
     '''
 
-def module_create(request):
-    if request.is_ajax():
-        if request.method == 'GET':
-            module_type = request.GET.get('module_type')
-            # NOTE: do this with actual ids later
-            form_render = None
-            form_script = None
-            if module_type == 'Datetime':
-                dt_form = DateForm()
-                template = get_template('dt/dt_form.html')
-                context = {
-                    'dt_form': dt_form
-                }
-                form_render = template.render(context)
-            elif module_type == 'Forecast':
-                forecast_form = ForecastForm()
-                template = get_template('forecast/forecast_form.html')
-                context = {
-                    'forecast_form': forecast_form
-                }
-                form_render = template.render(context)
-            elif module_type == 'Photos':
-                photos_form = PhotosForm()
-                formset = ImageFormSet(queryset=Image.objects.none())
-                template = get_template('photos/photos_form.html')
-                context = {
-                    'photos_form': photos_form,
-                    'formset': formset
-                }
-                form_render = template.render(context)
-                form_script = 'photos/scripts/photos_form.js'
-            elif module_type == 'Weather':
-                weather_form = WeatherForm()
-                template = get_template('weather/weather_form.html')
-                context = {
-                    'weather_form': weather_form
-                }
-                form_render = template.render(context)
-            else:
-                # What do here?
-                form_render = None
+def get_extended_form(request):
+    if request.method == 'GET':
+        module_type = request.GET.get('module_type')
+        form_render = None
+        form_script = None
+        if module_type == 'Datetime':
+            dt_form = DateForm()
+            template = get_template('dt/dt_form.html')
             context = {
-                'extended_form': form_render,
-                'extended_script': static(form_script) if form_script else ''
+                'dt_form': dt_form
             }
-            return JsonResponse(context)
+            form_render = template.render(context)
+        elif module_type == 'Forecast':
+            forecast_form = ForecastForm()
+            template = get_template('forecast/forecast_form.html')
+            context = {
+                'forecast_form': forecast_form
+            }
+            form_render = template.render(context)
+        elif module_type == 'Photos':
+            photos_form = PhotosForm()
+            formset = ImageFormSet(queryset=Image.objects.none())
+            template = get_template('photos/photos_form.html')
+            context = {
+                'photos_form': photos_form,
+                'formset': formset
+            }
+            form_render = template.render(context)
+            form_script = 'photos/scripts/photos_form.js'
+        elif module_type == 'Weather':
+            weather_form = WeatherForm()
+            template = get_template('weather/weather_form.html')
+            context = {
+                'weather_form': weather_form
+            }
+            form_render = template.render(context)
+        else:
+            # What do here?
+            form_render = None
+        context = {
+            'extended_form': form_render,
+            'extended_script': static(form_script) if form_script else ''
+        }
+        return JsonResponse(context)
+
+def module_create(request):
     if request.method == 'POST':
         module_form = ModuleCreateForm(request.POST)
         if module_form.is_valid():
@@ -157,8 +157,86 @@ def module_create(request):
             print(f'Type is: \'{module_type}\'')
             #extended_form = None
             # NOTE: this is also temporary, use actual module ids
+            extended_form = None
+            extended_module = None
             if str(module_type) == 'Datetime':
-                dt_form = DateForm(request.POST)#, module=module)#, instance=module)
+                extended_form = DateForm(request.POST)
+            elif str(module_type) == 'Forecast':
+                extended_form = ForecastForm(request.POST)
+            elif str(module_type) == 'Photos':
+                extended_form = PhotosForm(request.POST)
+                formset = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none())
+                if extended_form.is_valid() and formset.is_valid():
+                    extended_module = extended_form.save(commit=False)
+                    for form in formset.cleaned_data:
+                        # prevent crashing if the user doesn't upload all the photos
+                        if form:
+                            image_form = form['image']
+                            public = form['public']
+                            image = Image(owner=user, photos_module=extended_module, image=image_form, public=public)
+                            image.save()
+            elif str(module_type) == 'Weather':
+                extended_form = WeatherForm(request.POST)
+            else:
+                pass
+            
+            # Temporary save the module if it wasn't saved above
+            if extended_form.is_valid() and extended_module is None:
+                extended_module = extended_form.save(commit=False)
+            # Save all data from the form
+            if extended_form.is_valid():
+                module.owner = user
+                module.save()
+                extended_module.module = module
+                extended_module.save()
+            # TODO: complete this
+            module_style = get_template('dashboard/includes/module_style.html')
+            module_content = get_template('dashboard/includes/module_content.html')
+            page_content = get_content(request, module)
+            update_method = get_update_method(module)
+            module_script = get_template('dashboard/includes/module_script.html')
+            context = {
+                'id': module.id,
+                'type': module.module_type.module_type,
+                # NOTE: adding a style tag to head may not work, may need to put this as a 'style' within the div
+                # it seems to work, however
+                'style': module_style.render({
+                    'id': module.id,
+                    'type': module.module_type.module_type,
+                    'values': {
+                        'z-index': module.z_index,
+                        'top': module.y,
+                        'left': module.x,
+                        'color': module.text_color,
+                    },
+                }),   # Module's style
+                'content': module_content.render({
+                    'id': module.id,
+                    'type': module.module_type.module_type,
+                    'content': page_content['content'],
+                    'moveable': page_content['moveable'],
+                    'ajax': True,
+                    'values': {
+                        'zindex': module.z_index,
+                        'top': module.y,
+                        'left': module.x,
+                        'color': module.text_color,
+                    }
+                }), # Module's div
+                'values': {
+                    'zindex': module.z_index,
+                    'top': module.y,
+                    'left': module.x,
+                    'color': module.text_color,
+                    'moveable': page_content['moveable'],
+                },
+                'script': module_script.render({
+
+                }), # Module's script
+                'method': update_method,
+            }
+            return JsonResponse(context)
+            '''
                 if dt_form.is_valid():
                     dt = dt_form.save(commit=False)
                     module.owner = user
@@ -208,13 +286,16 @@ def module_create(request):
             else:
                 # TODO: what do?
                 pass
-            return redirect('user-modules') # Can also redirect to an object's get_absolute_url()
+            '''
+            #return redirect('user-modules') # Can also redirect to an object's get_absolute_url()
     else:
         module_form = ModuleCreateForm()
     context = {
         'module_form': module_form
     }
-    return render(request, 'dashboard/module_form.html', context)
+    template = get_template('dashboard/add_module.html')
+    return JsonResponse({'content': template.render(context, request=request)})
+    #return render(request, 'dashboard/module_form.html', context)
 
 def module_update(request, **kwargs):
     module = get_object_or_404(Module, id=kwargs['pk'])
@@ -237,11 +318,9 @@ def module_update(request, **kwargs):
             pass
 
         # Check if this was an AJAX call or not
-        if request.is_ajax():
-            print(f'ajax render: {render}')
-            return JsonResponse({'content': render, 'method': method})
-        else:
-            return render
+        #if request.is_ajax():
+        print(f'ajax render: {render}')
+        return JsonResponse({'content': render, 'method': method})
 
 def module_delete(request, **kwargs):
     module = get_object_or_404(Module, id=kwargs['pk'])
@@ -264,36 +343,56 @@ def generate_context(request):
     modules = {}
     unique_modules = []
     for module in Module.objects.filter(owner=user):
-        moveable = True
-        t = module.module_type.module_type
-        if t not in unique_modules:
-            unique_modules.append(t)
-        # TODO: may need to assign this dict key to pk of module to allow multiple copies
-        page_render = None
-        if t == 'dt':
-            page_render = dt_views.dt(request, module)
-        elif t == 'forecast':
-            page_render = forecast_views.forecast(request, module)
-        elif t == 'photos':
-            page_render = photos_views.photos(request, module)
-            if Photos.objects.filter(module=module).first().is_background:
-                moveable = False
-        elif t == 'weather':
-            page_render = weather_views.weather(request, module)
+        module_type = module.module_type.module_type
+        if module_type not in unique_modules:
+            unique_modules.append(module_type)
+        
+        page_content = get_content(request, module)
 
         modules[module.id] = {
             'id': module.id,
-            'type': t,
-            'styles': f'{t}/includes/{t}_styles.html',
-            'scripts': f'{t}/includes/{t}_scripts.html',
-            #'page': f'{t}/{t}.html',
+            'type': module_type,
+            'styles': f'{module_type}/includes/{module_type}_styles.html',
+            'scripts': f'{module_type}/includes/{module_type}_scripts.html',
+            #'page': f'{module_type}/{module_type}.html',
             'top': module.y,
             'left': module.x,
             'z_index': module.z_index,
             'text_color': module.text_color,
-            'moveable': moveable,
-            'content': page_render,
+            'moveable': page_content['moveable'],
+            'content': page_content['content'],
         }
     return modules, unique_modules
+
+def get_content(request, module):
+    module_type = module.module_type.module_type
+    moveable = True
+    page_render = None
+    # TODO: may need to assign this dict key to pk of module to allow multiple copies
+    if module_type == 'dt':
+        page_render = dt_views.dt(request, module)
+    elif module_type == 'forecast':
+        page_render = forecast_views.forecast(request, module)
+    elif module_type == 'photos':
+        page_render = photos_views.photos(request, module)
+        if Photos.objects.filter(module=module).first().is_background:
+            moveable = False
+    elif module_type == 'weather':
+        page_render = weather_views.weather(request, module)
+    return {
+        'content': page_render,
+        'moveable': moveable,
+    }
+
+def get_update_method(module):
+    module_type = module.module_type.module_type
+    if module_type == 'dt':
+        return 'update_dt'
+    elif module_type == 'forecast':
+        return 'update_forecast'
+    elif module_type == 'photos':
+        return 'update_photos'
+    elif module_type == 'weather':
+        return 'update_weather'
 
 # Module-specific gets

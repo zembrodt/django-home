@@ -138,12 +138,19 @@ $(document).ready(function() {
 });
 
 function update_weather(id) {
+    var found_weather = false;
     // TODO: update this array to a dict
     for (var i in weathers) {
         if (weathers[i].get_id() == id) {
+            found_weather = true;
             weathers[i] = new Weather(id);
             weathers[i].getLocation();
         }
+    }
+    if (!found_weather) {
+        var weather = new Weather(id);
+        weathers.push(weather);
+        weather.getLocation();
     }
 }
 /*
