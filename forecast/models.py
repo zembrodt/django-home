@@ -2,7 +2,7 @@ from django.db import models
 from dashboard.models import Module
 
 class Forecast(models.Model):
-    module = models.ForeignKey(Module, related_name='forecasts', on_delete=models.CASCADE)
+    module = models.OneToOneField(Module, related_name='forecast', on_delete=models.CASCADE)
     length = models.IntegerField(default=4)
     unit = models.CharField(max_length=50, default='fahrenheit')
     current_location = models.BooleanField(default=True)

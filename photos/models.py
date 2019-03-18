@@ -4,7 +4,7 @@ from dashboard.models import Module
 from users.models import Profile
 
 class Photos(models.Model):
-    module = models.ForeignKey(Module, related_name='photos', on_delete=models.CASCADE)
+    module = models.OneToOneField(Module, related_name='photos', on_delete=models.CASCADE)
     is_background = models.BooleanField(default=False)
     width = models.IntegerField(blank=True, null=True)
     height = models.IntegerField(blank=True, null=True)

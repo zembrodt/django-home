@@ -23,14 +23,100 @@ from photos.models import Image, Photos
 from photos import views as photos_views
 from weather.forms import WeatherForm
 from weather import views as weather_views
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.permissions import IsAuthenticated, BasePermission, AllowAny
+from rest_framework.authentication import TokenAuthentication, BasicAuthentication, SessionAuthentication
+from rest_framework.response import Response
+from .serializers import ModuleSerializer
+from rest_framework.generics import (
+    ListAPIView,
+    RetrieveAPIView,
+    CreateAPIView,
+    DestroyAPIView,
+    UpdateAPIView
+)
 
-import json, re
+import json
+import re
+
+class ModuleAccessPermission(BasePermission):
+    message = 'Updating/Deleting modules is not allowed'
+
+    def has_object_permission(self, request, view, obj):
+        print(f'Checking for permissions! user: {request.user}')
+        return request.user == obj.owner
+
+class ModuleListAPIView(ListAPIView):
+    serializer_class = ModuleSerializer
+    permission_classes = (ModuleAccessPermission, )
+
+    def get_queryset(self):
+        user = Profile.objects.get(user=self.request.user)
+        return Module.objects.filter(owner=user)
+
+@api_view(['PUT'])
+@permission_classes((IsAuthenticated, ModuleAccessPermission))
+def module_update_view(request, **kwargs):
+    print(f'request data: {request.data}')
+    module = get_object_or_404(Module, id=kwargs['pk'])
+    serializer = ModuleSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.update(module, request.data)
+        print('Update passed!')
+        return Response(status=status.HTTP_200_OK)
+    return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ModuleAccessPermission))
+def module_create_view(request):
+    print(f'request data: {request.data}')
+    serializer = ModuleSerializer(data=request.data, context={'request': request})
+    if serializer.is_valid():
+        serializer.create(request.data)
+        print('Update passed!')
+        return Response(status=status.HTTP_201_CREATED)
+    return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+
+class ModuleDeleteAPIView(DestroyAPIView):
+    serializer_class = ModuleSerializer
+    permission_classes = (ModuleAccessPermission, )
+
+    def get_queryset(self):
+        user = Profile.objects.get(user=self.request.user)
+        return Module.objects.filter(owner=user)
+
+'''
+class ArticleDetailView(RetrieveAPIView):
+    queryset = Article.objects.all()
+    serializer_class = ArticleSerializer
+    permission_classes = (permissions.AllowAny, )
+'''
+#@login_required
+@api_view(['GET'])
+@authentication_classes((TokenAuthentication,SessionAuthentication, BasicAuthentication))
+@permission_classes((IsAuthenticated, ModuleAccessPermission))
+def modules(request):
+    print(f'We\'re in modules! user: {request.user}')
+    user = Profile.objects.get(user=request.user)
+    #data = [ModuleSerializer(module).data for module in modules]
+    data = {'modules': [ModuleSerializer(module).data for module in Module.objects.filter(owner=user)] }
+    return Response(data)
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ModuleAccessPermission))
+def module(request, **kwargs):
+    module = get_object_or_404(Module, id=kwargs['pk'])
+    data = {'module': ModuleSerializer(module).data}
+    return Response(data)
+    
 
 def home(request):
     context = {
         'user': request.user
     }
     return render(request, 'dashboard/home.html', context)
+
 
 @login_required
 def dashboard(request):
@@ -42,6 +128,7 @@ def dashboard(request):
     }
     return render(request, 'dashboard/dashboard.html', context)
 
+
 @login_required
 def update(request):
     modules, unique_modules = generate_context(request)
@@ -51,6 +138,7 @@ def update(request):
         'user': request.user
     }
     return render(request, 'dashboard/dashboard_update.html', context)
+
 
 @login_required
 def save_update(request):
@@ -62,13 +150,13 @@ def save_update(request):
         for data_json in id_data:
             data = json.loads(data_json)
             _, t, pk = data['id'].split('-')
-            
+
             module = Module.objects.filter(pk=pk, owner=user).first()
             module.x = int(re.sub('px', '', data['left']))
             module.y = int(re.sub('px', '', data['top']))
             module.z_index = int(data['z-index'])
             module.save()
-            
+
             #module.update(x=int(re.sub('px', '', data['top'])), y=int(re.sub('px', '', data['left'])))
 
         context = {
@@ -78,19 +166,22 @@ def save_update(request):
 
     # TODO no valid return if method isn't GET
 
-class ModuleListView(LoginRequiredMixin, ListView):#UserPassesTestMixin, ListView):
+
+# UserPassesTestMixin, ListView):
+class ModuleListView(LoginRequiredMixin, ListView):
     model = Module
-    template_name = 'dashboard/modules.html' # default: <app>/<model>_<viewtype>.html
+    # default: <app>/<model>_<viewtype>.html
+    template_name = 'dashboard/modules.html'
     context_object_name = 'modules'
-    
-    #def get(self, request, *args, **kwargs):
+
+    # def get(self, request, *args, **kwargs):
     #    context = super(ModuleListView, self).get_context_data(**kwargs)
     #    context.update({'title': f'{self.request.user}\'s Modules'})
 
     def get_queryset(self):
         user = get_object_or_404(User, username=self.request.user)
         profile = Profile.objects.filter(user=user).first()
-        #return Profile.objects.filter(user=user).first().modules.all()
+        # return Profile.objects.filter(user=user).first().modules.all()
         return Module.objects.filter(owner=profile)
     '''
     def test_func(self):
@@ -100,6 +191,13 @@ class ModuleListView(LoginRequiredMixin, ListView):#UserPassesTestMixin, ListVie
             return True
         return False
     '''
+
+
+def api_modules(request):
+    print(f'request: {request}')
+    print(f'user: {request.user}')
+    return JsonResponse({'blah1': 'blah1', 'blah2': 'blah2'})
+
 
 def get_extended_form(request):
     if request.method == 'GET':
@@ -146,6 +244,7 @@ def get_extended_form(request):
         }
         return JsonResponse(context)
 
+
 def module_create(request):
     if request.method == 'POST':
         module_form = ModuleCreateForm(request.POST)
@@ -165,7 +264,8 @@ def module_create(request):
                 extended_form = ForecastForm(request.POST)
             elif str(module_type) == 'Photos':
                 extended_form = PhotosForm(request.POST)
-                formset = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none())
+                formset = ImageFormSet(
+                    request.POST, request.FILES, queryset=Image.objects.none())
                 if extended_form.is_valid() and formset.is_valid():
                     extended_module = extended_form.save(commit=False)
                     for form in formset.cleaned_data:
@@ -173,13 +273,14 @@ def module_create(request):
                         if form:
                             image_form = form['image']
                             public = form['public']
-                            image = Image(owner=user, photos_module=extended_module, image=image_form, public=public)
+                            image = Image(
+                                owner=user, photos_module=extended_module, image=image_form, public=public)
                             image.save()
             elif str(module_type) == 'Weather':
                 extended_form = WeatherForm(request.POST)
             else:
                 pass
-            
+
             # Temporary save the module if it wasn't saved above
             if extended_form.is_valid() and extended_module is None:
                 extended_module = extended_form.save(commit=False)
@@ -191,10 +292,12 @@ def module_create(request):
                 extended_module.save()
             # TODO: complete this
             module_style = get_template('dashboard/includes/module_style.html')
-            module_content = get_template('dashboard/includes/module_content.html')
+            module_content = get_template(
+                'dashboard/includes/module_content.html')
             page_content = get_content(request, module)
             update_method = get_update_method(module)
-            module_script = get_template('dashboard/includes/module_script.html')
+            module_script = get_template(
+                'dashboard/includes/module_script.html')
             context = {
                 'id': module.id,
                 'type': module.module_type.module_type,
@@ -222,7 +325,7 @@ def module_create(request):
                         'left': module.x,
                         'color': module.text_color,
                     }
-                }), # Module's div
+                }),  # Module's div
                 'values': {
                     'zindex': module.z_index,
                     'top': module.y,
@@ -232,7 +335,7 @@ def module_create(request):
                 },
                 'script': module_script.render({
 
-                }), # Module's script
+                }),  # Module's script
                 'method': update_method,
             }
             return JsonResponse(context)
@@ -287,7 +390,7 @@ def module_create(request):
                 # TODO: what do?
                 pass
             '''
-            #return redirect('user-modules') # Can also redirect to an object's get_absolute_url()
+            # return redirect('user-modules') # Can also redirect to an object's get_absolute_url()
     else:
         module_form = ModuleCreateForm()
     context = {
@@ -295,7 +398,8 @@ def module_create(request):
     }
     template = get_template('dashboard/add_module.html')
     return JsonResponse({'content': template.render(context, request=request)})
-    #return render(request, 'dashboard/module_form.html', context)
+    # return render(request, 'dashboard/module_form.html', context)
+
 
 def module_update(request, **kwargs):
     module = get_object_or_404(Module, id=kwargs['pk'])
@@ -318,9 +422,10 @@ def module_update(request, **kwargs):
             pass
 
         # Check if this was an AJAX call or not
-        #if request.is_ajax():
+        # if request.is_ajax():
         print(f'ajax render: {render}')
         return JsonResponse({'content': render, 'method': method})
+
 
 def module_delete(request, **kwargs):
     module = get_object_or_404(Module, id=kwargs['pk'])
@@ -338,6 +443,7 @@ def module_delete(request, **kwargs):
                 template = get_template('dashboard/delete_form.html')
                 return JsonResponse({'content': template.render(context, request=request)})
 
+
 def generate_context(request):
     user = Profile.objects.filter(user=request.user).first()
     modules = {}
@@ -346,7 +452,7 @@ def generate_context(request):
         module_type = module.module_type.module_type
         if module_type not in unique_modules:
             unique_modules.append(module_type)
-        
+
         page_content = get_content(request, module)
 
         modules[module.id] = {
@@ -354,7 +460,7 @@ def generate_context(request):
             'type': module_type,
             'styles': f'{module_type}/includes/{module_type}_styles.html',
             'scripts': f'{module_type}/includes/{module_type}_scripts.html',
-            #'page': f'{module_type}/{module_type}.html',
+            # 'page': f'{module_type}/{module_type}.html',
             'top': module.y,
             'left': module.x,
             'z_index': module.z_index,
@@ -363,6 +469,7 @@ def generate_context(request):
             'content': page_content['content'],
         }
     return modules, unique_modules
+
 
 def get_content(request, module):
     module_type = module.module_type.module_type
@@ -383,6 +490,7 @@ def get_content(request, module):
         'content': page_render,
         'moveable': moveable,
     }
+
 
 def get_update_method(module):
     module_type = module.module_type.module_type
