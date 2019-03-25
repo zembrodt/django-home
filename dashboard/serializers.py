@@ -45,6 +45,8 @@ class ModuleSerializer(serializers.ModelSerializer):
         user = Profile.objects.get(user=self.context['request'].user)
         module = Module.objects.create(**validated_data, module_type=module_type_obj, owner=user)
 
+        # TODO: We should possible create a check that the submodule_data is valid before creating the module
+        
         if module_type == 'dt':
             Datetime.objects.create(**submodule_data, module=module)
         elif module_type == 'forecast':
@@ -56,14 +58,17 @@ class ModuleSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         print(f'instance: {instance}\nvalidated data: {validated_data}')
-        submodule_data = validated_data.pop('submodule')
+        is_submodule = False
+        if 'submodule' in validated_data:
+            is_submodule = True
+            submodule_data = validated_data.pop('submodule')
         # Unless the application properly enforces that this field is
         # always set, the follow could raise a `DoesNotExist`, which
         # would need to be handled.
         #submodule = instance.submodule
 
         print(f'instance: {instance}\nmodule type: {instance.module_type}\ntype 2: {instance.module_type.module_type}')
-        module_type = instance.module_type.module_type
+        
 
         # Save the module
         instance.x = validated_data.get('x', instance.x)
@@ -73,26 +78,29 @@ class ModuleSerializer(serializers.ModelSerializer):
         instance.save()
 
         # Save the submodule
-        if module_type == 'dt':
-            serializer = DatetimeSerializer(data=submodule_data)
-            print('Got dt serializer')
-            if serializer.is_valid():
-                print('dt serializer valid')
-                serializer.update(instance.dt, submodule_data)
-            else:
-                print(f'dt serializer data NOT valid: {submodule_data}')
-        elif module_type == 'forecast':
-            serializer = ForecastSerializer(data=submodule_data)
-            if serializer.is_valid():
-                serializer.update(instance.forecast, submodule_data)
-        elif module_type == 'photos':
-            serializer = PhotosSerializer(data=submodule_data)
-            if serializer.is_valid():
-                serializer.update(instance.photos, submodule_data)
-        elif module_type == 'weather':
-            serializer = WeatherSerializer(data=submodule_data)
-            if serializer.is_valid():
-                serializer.update(instance.weather, submodule_data)
+        if is_submodule:
+            module_type = instance.module_type.module_type
+            
+            if module_type == 'dt':
+                serializer = DatetimeSerializer(data=submodule_data)
+                print('Got dt serializer')
+                if serializer.is_valid():
+                    print('dt serializer valid')
+                    serializer.update(instance.dt, submodule_data)
+                else:
+                    print(f'dt serializer data NOT valid: {submodule_data}')
+            elif module_type == 'forecast':
+                serializer = ForecastSerializer(data=submodule_data)
+                if serializer.is_valid():
+                    serializer.update(instance.forecast, submodule_data)
+            elif module_type == 'photos':
+                serializer = PhotosSerializer(data=submodule_data)
+                if serializer.is_valid():
+                    serializer.update(instance.photos, submodule_data)
+            elif module_type == 'weather':
+                serializer = WeatherSerializer(data=submodule_data)
+                if serializer.is_valid():
+                    serializer.update(instance.weather, submodule_data)
         # profile.has_support_contract = profile_data.get(
         #     'has_support_contract',
         #     profile.has_support_contract
