@@ -4,4 +4,4 @@ from .models import Photos
 class PhotosSerializer(serializers.ModelSerializer):
     class Meta:
         model = Photos
-        fields = ('is_background', 'width', 'height')
+        fields = ('is_background', 'width', 'height', 'interval')

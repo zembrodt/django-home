@@ -17,7 +17,6 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-#from weather import views as weather_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,6 +25,7 @@ urlpatterns = [
     path('user/', include ('users.urls')),
     path('api/forecast/', include('forecast.urls')),
     path('forecast/', include('forecast.urls')),
+    path('api/photos/', include('photos.urls')),
     path('weather/', include('weather.urls')),
     path('api/weather/', include('weather.urls')),
 ]

@@ -1,15 +1,26 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
+from django.http.response import JsonResponse
 from django.template.loader import get_template
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
 from .forms import PhotosForm
 from .models import Photos, Image
 from dashboard.forms import ModuleUpdateForm
+from dashboard.models import Module
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated,))
+def get_images(request, **kwargs):
+    module = get_object_or_404(Module, id=kwargs['pk'])
+    photos = Photos.objects.get(module=module)
+    images = Image.objects.filter(photos_module=photos)
+    return JsonResponse({'images': [image.image.url for image in images]})
 
 def photos(request, module):
     template = get_template('photos/photos.html')
     photo = Photos.objects.filter(module=module).first()
     # temp
     images = Image.objects.filter(photos_module=photo)
-    image = Image.objects.filter(photos_module=photo).first()
     
     context = {
         'photo': photo,
