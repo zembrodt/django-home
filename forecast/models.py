@@ -11,4 +11,4 @@ class Forecast(models.Model):
     city = models.CharField(max_length=100, null=True)
 
     def __str__(self):
-        return f'Forecast module of length {self.length} ({self.module})'
+        return f'Forecast (module={self.module})'

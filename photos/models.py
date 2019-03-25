@@ -15,7 +15,7 @@ class Photos(models.Model):
     #image = models.ImageField(default='default_bg.jpg', upload_to='background_pics')
 
     def __str__(self):
-        return f'Photos module: {self.module}'
+        return f'Photos (module={self.module})'
 
 def get_image_filename(instance, filename):
     #slug = slugify(filename)

@@ -19,7 +19,7 @@ class Module(models.Model):
     text_color = models.CharField(max_length=7, default='#ffffff')
 
     def __str__(self):
-        return f'Module of {self.module_type} at ({self.x}, {self.y})'
+        return f'Module (id={self.id}, type={self.module_type})'
 
     def get_absolute_url(self):
         return reverse('dashboard')#, kwargs={'pk': self.pk})

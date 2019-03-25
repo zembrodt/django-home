@@ -8,4 +8,4 @@ class Datetime(models.Model):
     timezone = models.IntegerField(null=True)
 
     def __str__(self):
-        return f'Datetime module: {self.module}'
+        return f'Datetime (module={self.module})'
