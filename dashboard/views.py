@@ -44,8 +44,9 @@ class ModuleAccessPermission(BasePermission):
     message = 'Updating/Deleting modules is not allowed'
 
     def has_object_permission(self, request, view, obj):
-        print(f'Checking for permissions! user: {request.user}')
-        return request.user == obj.owner
+        user = Profile.objects.get(user=request.user)
+        print(f'Checking for permissions! user: {user}')
+        return user == obj.owner
 
 class ModuleListAPIView(ListAPIView):
     serializer_class = ModuleSerializer
