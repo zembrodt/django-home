@@ -9,14 +9,7 @@
         }
     {% for module, values in modules.items %}
         {% with id=values.id|escapejs type=values.type|escapejs %}
-        {#% include values.styles|escapejs with id=id %#}
-            #id-{{ type }}-{{ id }} {
-                z-index: {{ values.z_index }};
-                top: {{ values.top }}px;
-                left: {{ values.left }}px;
-                color: {{ values.text_color }}
-            }
-        
+            {% include "dashboard/includes/module_style.html" %}
         {% endwith %}
     {% endfor %}
     </style>
@@ -27,20 +20,22 @@
 {% endblock styles %}
 
 {% block content %}
+<div id="dashboard" class="dashboard">
     {% block update-content %}{% endblock update-content %}
-    <!-- <h1>{{ user }}'s Dashboard</h1> -->
     {% for module, values in modules.items %}
-        <div id="id-{{ values.type|escapejs }}-{{ values.id|escapejs }}" class="module">
-            {#% include values.page|escapejs %#}
-            {{ values.content }}
-        </div>
+        {% with id=values.id|escapejs type=values.type|escapejs content=values.content %}
+            {% include "dashboard/includes/module_content.html" %}
+        {% endwith %}
     {% endfor %}
+</div>
+<div id="module-list">
+    {% for module in unique_modules %}
+        <input id="module-type-{{ forloop.counter0 }}" type="hidden" value="{{ module }}">
+    {% endfor %}
+</div>
 {% endblock content %}
 
 {% block scripts %}
-    {#% for module, values in modules.items %#}  
-        {#% include values.scripts|escapejs with id=values.id|escapejs %#}
-    {#% endfor %#}
     {% for module in unique_modules %}
         {% include module|escapejs|add:"/includes/"|add:module|escapejs|add:"_scripts.html" %}
     {% endfor %}

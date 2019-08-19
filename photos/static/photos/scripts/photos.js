@@ -61,4 +61,17 @@ $('div').filter(function() {
     }
 });
 
+// TODO: finish this
+function update_photos(id) {
+    var photo = $('#id-photos-' + id);
+    var count = photo.find('#img-count').val();
+    var images = [];
+    for (var i = 0; i < count; i++) {
+        images.push(photo.find('#img-' + i).val());
+        //temp
+        var img = photo.find('[id^=photo]');
+        img.attr('src', images[i]);
+    }
+}
+
 

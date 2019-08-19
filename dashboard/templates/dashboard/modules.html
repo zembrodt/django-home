@@ -3,9 +3,6 @@
 {% block content %}
     {% include "dashboard/includes/nav.html" with modules="true" %}
     <h1>{{ request.user }}'s Modules</h1>
-    <small>
-        <a href="{% url 'add-module' %}">Add a new module</a>
-    </small>
     {% for module in modules %}
         <p>
             Module type: {{ module.module_type }}<br/>
@@ -13,8 +10,8 @@
             y: {{ module.y }}
         </p>
         <p>
-            <a href="{% url 'update-module' module.id %}">Update</a><br/>
-            <a href="{% url 'delete-module' module.id %}">Delete</a>
+            <!-- <a href="{% url 'update-module' module.id %}">Update</a><br/>
+            <a href="{% url 'delete-module' module.id %}">Delete</a> -->
         </p>
     {% endfor %}
 {% endblock %}

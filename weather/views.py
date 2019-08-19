@@ -3,14 +3,13 @@ from django.conf import settings
 from django.http.response import JsonResponse
 from django.template.loader import get_template
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic import (
-    UpdateView,
-)
+from django.views.generic import UpdateView
 from pyowm.exceptions.api_call_error import APICallTimeoutError
 from pyowm.exceptions.api_response_error import NotFoundError
 from urllib.request import urlopen
 from urllib.parse import quote
 from datetime import datetime, timedelta
+from dashboard.forms import ModuleUpdateForm
 from dashboard.models import Module
 from .forms import WeatherForm, UNIT_DISPLAY
 from .models import Weather
@@ -171,12 +170,23 @@ def get_distance(coords1, coords2):
 
 def update_weather(request, module):
     instance = Weather.objects.filter(module=module).first()
-    form = WeatherForm(request.POST or None, instance=instance)
-    if form.is_valid():
-        form.save()
-        return redirect('user-modules')
+    module_form = ModuleUpdateForm(request.POST or None, instance=module)
+    weather_form = WeatherForm(request.POST or None, instance=instance)
+    if module_form.is_valid() and weather_form.is_valid():
+        module_form.save()
+        weather_form.save()
+        if request.is_ajax():
+            return weather(request, module), 'update_weather'
+        else:
+            return redirect('user-modules')
     context = {
-        'module_form': form,
+        'id': module.id,
+        'module_form': module_form,
+        'extended_form': weather_form,
         'module_type': 'weather'
     }
-    return render(request, 'dashboard/update_form.html', context)
+    if request.is_ajax():
+        form = get_template('dashboard/update_form_embedded.html')
+        return form.render(context, request=request), ''
+    else:
+        return render(request, 'dashboard/update_form.html', context)

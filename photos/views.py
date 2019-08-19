@@ -2,6 +2,7 @@ from django.shortcuts import redirect, render
 from django.template.loader import get_template
 from .forms import PhotosForm
 from .models import Photos, Image
+from dashboard.forms import ModuleUpdateForm
 
 def photos(request, module):
     template = get_template('photos/photos.html')
@@ -20,12 +21,23 @@ def photos(request, module):
 
 def update_photos(request, module):
     instance = Photos.objects.filter(module=module).first()
-    form = PhotosForm(request.POST or None, instance=instance)
-    if form.is_valid():
-        form.save()
-        return redirect('user-modules')
+    module_form = ModuleUpdateForm(request.POST or None, instance=module)
+    photos_form = PhotosForm(request.POST or None, instance=instance)
+    if module_form.is_valid() and photos_form.is_valid():
+        module_form.save()
+        photos_form.save()
+        if request.is_ajax():
+            return photos(request, module), 'update_photos'
+        else:
+            return redirect('user-modules')
     context = {
-        'module_form': form,
+        'id': module.id,
+        'module_form': module_form,
+        'extended_form': photos_form,
         'module_type': 'photos'
     }
-    return render(request, 'dashboard/update_form.html', context)
+    if request.is_ajax():
+        form = get_template('dashboard/update_form_embedded.html')
+        return form.render(context, request=request), ''
+    else:
+        return render(request, 'dashboard/update_form.html', context)

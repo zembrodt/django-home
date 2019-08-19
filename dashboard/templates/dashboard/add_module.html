@@ -1,0 +1,16 @@
+{% load crispy_forms_tags %}
+
+<div id='add-form-container' class='popup-form'>
+    <form id='add-form' method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <fieldset>
+            <legend class="border-bottom mb-4">Add Module</legend>
+            {{ module_form }}
+        </fieldset>
+        <div id='extended_form'></div>
+        <div>
+            <button class="btn btn-outline-primary" type="submit">Add</button>
+            <button id="add-cancel" class="btn btn-outline-secondary" type="button">Cancel</button>
+        </div>
+    </form>
+</div>

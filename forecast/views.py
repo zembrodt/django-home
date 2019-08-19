@@ -5,6 +5,7 @@ from django.template.loader import get_template
 from pyowm.exceptions.api_call_error import APICallTimeoutError
 from urllib.request import urlopen
 from datetime import datetime, timedelta
+from dashboard.forms import ModuleUpdateForm
 from dashboard.models import Module
 from .models import Forecast
 from .forms import ForecastForm
@@ -117,12 +118,23 @@ def update_forecast_stats(request):
 
 def update_forecast(request, module):
     instance = Forecast.objects.filter(module=module).first()
-    form = ForecastForm(request.POST or None, instance=instance)
-    if form.is_valid():
-        form.save()
-        return redirect('user-modules')
+    module_form = ModuleUpdateForm(request.POST or None, instance=module)
+    forecast_form = ForecastForm(request.POST or None, instance=instance)
+    if module_form.is_valid() and forecast_form.is_valid():
+        module_form.save()
+        forecast_form.save()
+        if request.is_ajax():
+            return forecast(request, module), 'update_forecast'
+        else:
+            return redirect('user-modules')
     context = {
-        'module_form': form,
+        'id': module.id,
+        'module_form': module_form,
+        'extended_form': forecast_form,
         'module_type': 'forecast'
     }
-    return render(request, 'dashboard/update_form.html', context)
+    if request.is_ajax():
+        form = get_template('dashboard/update_form_embedded.html')
+        return form.render(context, request=request), ''
+    else:
+        return render(request, 'dashboard/update_form.html', context)
