@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'dt.apps.DtConfig',
     'photos.apps.PhotosConfig',
     'traffic.apps.TrafficConfig',
+    'frontend.apps.FrontendConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

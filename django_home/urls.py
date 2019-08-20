@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('dashboard.urls')),
+    path('frontend', include('frontend.urls')), # NOTE eventually change this to ''
     path('auth/', include('rest_framework.urls')),
     path('user/', include ('users.urls')),
     path('api/forecast/', include('forecast.urls')),
